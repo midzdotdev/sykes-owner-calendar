@@ -2,13 +2,13 @@
 
 A web service offering your [Sykes Cottages](https://www.sykescottages.co.uk) property bookings as a calendar.
 
-It uses the [iCalendar](https://en.wikipedia.org/wiki/ICalendar) standard, which is supported by many different calendar applications such as Outlook, Apple Calendar, Google Calendar and many more.
+It uses the [iCalendar](https://en.wikipedia.org/wiki/ICalendar) standard, which is supported by many different calendar applications such as Outlook, Apple Calendar, Google Calendar.
 
 ## Getting Started
 
-[This article](https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device) does a good job at describing the steps for subscribing to a calendar with many different calendar clients.
+[This article](https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device) does a good job at describing the steps for subscribing to a calendar with a few apps.
 
-The URL for bookings is as follows:
+The URL for the bookings calendar is as follows:
 
 ```
 https://sykes-owner-calendar.vercel.app/bookings/[property-id]?email=[email]&password=[password]
