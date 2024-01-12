@@ -1,0 +1,4 @@
+GET /owner/bookings/21953 HTTP/1.1
+Host: www.sykescottages.co.uk
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Cookie: PHPSESSID=529utnjpjk9t3pdv30csns3qvb
