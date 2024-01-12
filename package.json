@@ -7,6 +7,10 @@
     "preview": "node .output/server/index.mjs"
   },
   "dependencies": {
-    "nitropack": "latest"
+    "cheerio": "^1.0.0-rc.12",
+    "date-fns": "^3.2.0",
+    "ical-generator": "^6.0.1",
+    "nitropack": "latest",
+    "zod": "^3.22.4"
   }
 }
