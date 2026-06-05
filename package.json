@@ -7,7 +7,9 @@
     "prepare": "nitropack prepare",
     "dev": "nitropack dev",
     "build": "nitropack build",
-    "preview": "node .output/server/index.mjs"
+    "preview": "node .output/server/index.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
@@ -15,5 +17,8 @@
     "ical-generator": "^6.0.1",
     "nitropack": "latest",
     "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.8"
   }
 }
