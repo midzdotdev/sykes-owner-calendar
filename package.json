@@ -8,8 +8,7 @@
     "dev": "nitropack dev",
     "build": "nitropack build",
     "preview": "node .output/server/index.mjs",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest",
     "typecheck": "nitropack prepare && tsc --noEmit"
   },
   "dependencies": {
