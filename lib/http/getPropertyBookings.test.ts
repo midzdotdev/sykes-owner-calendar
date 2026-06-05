@@ -26,8 +26,13 @@ describe("getPropertyBookings", () => {
     );
   });
 
+  it("reads the property name from the dropdown", async () => {
+    const { name } = await callWith();
+    expect(name).toBe("Test Cottage");
+  });
+
   it("parses every booking row from the live DOM structure", async () => {
-    const bookings = await callWith();
+    const { bookings } = await callWith();
     expect(bookings).toHaveLength(4);
     expect(bookings.map((b) => b.Status)).toEqual([
       "Confirmed",
@@ -38,11 +43,8 @@ describe("getPropertyBookings", () => {
   });
 
   it("captures the customer name from the relocated .booking-name-display element", async () => {
-    // Regression: Sykes moved the name out of the label/value span pairs into a
-    // `.booking-name-and-message-stack` wrapper, which the row selector skips.
-    // Before the fix these were all undefined and the schema parse threw.
-    const bookings = (await callWith()) as CustomerBooking[];
-    expect(bookings.map((b) => b.Name)).toEqual([
+    const { bookings } = await callWith();
+    expect((bookings as CustomerBooking[]).map((b) => b.Name)).toEqual([
       "Mr Alex Morgan",
       "Mrs Sam Taylor",
       "Ms Jamie Lee",
@@ -51,7 +53,8 @@ describe("getPropertyBookings", () => {
   });
 
   it("transforms dates, occupancy and contact details on a booking", async () => {
-    const [first] = (await callWith()) as CustomerBooking[];
+    const { bookings } = await callWith();
+    const [first] = bookings as CustomerBooking[];
     expect(first["Booking Ref / PBN"]).toBe("5JC4A-25-EN");
     // Local getters: TZ-independent (date-fns parse sets local components).
     expect(first["Arrival Date"].getFullYear()).toBe(2026);
@@ -63,9 +66,10 @@ describe("getPropertyBookings", () => {
   });
 
   it("parses teenagers/children occupancy when present", async () => {
-    const bookings = (await callWith()) as CustomerBooking[];
-    expect(bookings[1]["Teenagers and Children"]).toBe(2);
-    expect(bookings[1].Adults).toBe(2);
-    expect(bookings[2].Adults).toBe(3);
+    const { bookings } = await callWith();
+    const customers = bookings as CustomerBooking[];
+    expect(customers[1]["Teenagers and Children"]).toBe(2);
+    expect(customers[1].Adults).toBe(2);
+    expect(customers[2].Adults).toBe(3);
   });
 });
