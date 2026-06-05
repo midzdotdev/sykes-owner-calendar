@@ -8,7 +8,7 @@ It works with the calendars most people already use, including **Apple Calendar*
 
 You only do this once. After that, the calendar looks after itself.
 
-1. Go to **[sykes-owner-calendar.vercel.app](https://sykes-owner-calendar.vercel.app)**.
+1. Go to **[sykes-calendar.midz.dev](https://sykes-calendar.midz.dev)**.
 2. Enter the email and password you use to sign in to Sykes. (They're scrambled on your own device before anything is sent — see below.)
 3. Press **Find my properties** and tick the ones you want. You'll get a **separate calendar for each property** (tick "Put them all in one calendar" if you'd rather have everything together).
 4. Press **Create my links**, then press **Copy** next to each property and add it to your calendar app. Adding a calendar this way is sometimes called *subscribing*; [this short guide](https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device) shows how on the most popular apps — wherever it asks for a calendar address, paste in your link.

@@ -5,7 +5,7 @@
 //   PROD_URL, SYKES_EMAIL, SYKES_PASSWORD, SYKES_PROPERTY_ID
 import { encryptCredentials } from "../../public/crypto.js";
 
-const BASE = process.env.PROD_URL ?? "https://sykes-owner-calendar.vercel.app";
+const BASE = process.env.PROD_URL ?? "https://sykes-calendar.midz.dev";
 const email = process.env.SYKES_EMAIL;
 const password = process.env.SYKES_PASSWORD;
 const propertyId = process.env.SYKES_PROPERTY_ID;
