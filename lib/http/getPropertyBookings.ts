@@ -6,10 +6,16 @@ import { serialiseCookies } from "../utils/cookies";
 import { USER_AGENT } from "./constants";
 import { ExtractionError } from "../errors";
 
+export type PropertyBookings = {
+  /** The property's name, from the page's dropdown — available even with no bookings. */
+  name?: string;
+  bookings: Booking[];
+};
+
 export const getPropertyBookings = async (params: {
   session: SykesSession;
   propertyId: string;
-}): Promise<Booking[]> => {
+}): Promise<PropertyBookings> => {
   const bookingsResp = await fetch(
     `https://www.sykescottages.co.uk/owner/bookings/${params.propertyId}`,
     {
@@ -21,6 +27,14 @@ export const getPropertyBookings = async (params: {
   );
 
   const $ = cheerio.load(await bookingsResp.text());
+
+  // Sykes labels the dropdown option as "<id> <name>"; keep just the name.
+  const name =
+    $(`#property-selector option[value="${params.propertyId}"]`)
+      .first()
+      .text()
+      .trim()
+      .replace(new RegExp(`^${params.propertyId}\\s+`), "") || undefined;
 
   const rawBookings = $("#booking-list .row")
     .toArray()
@@ -48,5 +62,5 @@ export const getPropertyBookings = async (params: {
   if (!parsed.success) {
     throw new ExtractionError("Could not read bookings — the Sykes page may have changed");
   }
-  return parsed.data;
+  return { name, bookings: parsed.data };
 };

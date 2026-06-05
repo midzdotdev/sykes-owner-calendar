@@ -11,16 +11,17 @@ export const buildCombinedCalendar = async (creds: Credentials) => {
     password: creds.password,
   });
 
-  const bookings = [];
+  const results = [];
   for (const propertyId of creds.propertyIds) {
-    bookings.push(...(await getPropertyBookings({ session, propertyId })));
+    results.push(await getPropertyBookings({ session, propertyId }));
   }
+  const bookings = results.flatMap((r) => r.bookings);
 
-  // One property → use its name; several → a generic title (each event still
-  // names its property in the description).
+  // One property → name the calendar after it (works even with no bookings);
+  // several → a generic title (each event still names its property).
   const name =
     creds.propertyIds.length === 1
-      ? bookings[0]?.Property ?? "Sykes Bookings"
+      ? results[0]?.name ?? results[0]?.bookings[0]?.Property ?? "Sykes Bookings"
       : "Sykes Bookings";
 
   return makeBookingsCalendar(bookings, name);
