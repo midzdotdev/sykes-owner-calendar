@@ -26,9 +26,16 @@ const pubRes = await fetch(`${BASE}/api/pubkey`);
 if (!pubRes.ok) fail(`GET /api/pubkey → ${pubRes.status}`);
 const { publicKey } = await pubRes.json();
 
-const token = await encryptCredentials(publicKey, { email, password, propertyIds: [propertyId] });
-const res = await fetch(`${BASE}/c/${token}`);
-const body = await res.text();
+// Retry on a transient gateway timeout (cold start + a slow Sykes response).
+let res, body;
+for (let attempt = 1; attempt <= 3; attempt++) {
+  const token = await encryptCredentials(publicKey, { email, password, propertyIds: [propertyId] });
+  res = await fetch(`${BASE}/c/${token}`);
+  body = await res.text();
+  if (res.status !== 504) break;
+  log(`504 on attempt ${attempt}, retrying…`);
+  await new Promise((r) => setTimeout(r, 3000));
+}
 
 if (res.status !== 200) fail(`GET /c → expected 200, got ${res.status}`);
 if (!(res.headers.get("content-type") || "").includes("text/calendar")) {
