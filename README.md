@@ -47,7 +47,6 @@ A small [Nitro](https://nitro.build) server in TypeScript.
   - `GET /api/pubkey` — the server's public key.
   - `POST /api/properties {token}` — the owner's properties, or a typed error.
   - `GET /c/<token>` — calendar feed for a token (merges the selected properties).
-  - `GET /bookings/<id>?email&password` — the original plaintext feed (still supported).
 - **Scraping** (`lib/http/`) — sign in (`getAuthenticatedSession`, throws `AuthError`), list properties (`getProperties`), read bookings (`getPropertyBookings`, throws `ExtractionError` on a markup change), via [cheerio](https://cheerio.js.org) + [zod](https://zod.dev). Calendars are built with [ical-generator](https://github.com/sebbo2002/ical-generator) (`lib/ical.ts`).
 
 ## Requirements
@@ -63,7 +62,7 @@ A small [Nitro](https://nitro.build) server in TypeScript.
 | `npm run preview` | Run the built server |
 | `npm test` | Unit tests (Vitest) — watch locally, single run in CI |
 | `npm run typecheck` | `tsc --noEmit` (Nitro's build does not type-check) |
-| `npm run test:e2e` | End-to-end smoke of the built server (legacy route, web UI, `/c` feed), Sykes mocked from fixtures |
+| `npm run test:e2e` | End-to-end smoke of the built server (web UI + `/c` feed), Sykes mocked from fixtures |
 | `npm run test:e2e:live` | Same, against the real Sykes site (needs `SYKES_*`) |
 
 ## Secrets
