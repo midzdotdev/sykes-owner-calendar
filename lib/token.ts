@@ -79,7 +79,9 @@ export const createTokenCodec = (privateKeyPem: string) => {
 };
 
 export const loadCodecFromEnv = () => {
-  const pem = process.env.TOKEN_PRIVATE_KEY;
-  if (!pem) throw new Error("TOKEN_PRIVATE_KEY is not set");
-  return createTokenCodec(pem);
+  const raw = process.env.TOKEN_PRIVATE_KEY;
+  if (!raw) throw new Error("TOKEN_PRIVATE_KEY is not set");
+  // Accept a PEM with real newlines, or one stored single-line with escaped \n,
+  // so the key can live in a .env file or any one-line secret store.
+  return createTokenCodec(raw.replace(/\\n/g, "\n"));
 };
