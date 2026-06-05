@@ -1,0 +1,43 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`makeBookingsCalendar > renders a mixed set of bookings to a stable ICS document 1`] = `
+"BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//midz.dev//Sykes Owner's Calendar//EN
+NAME:Sea View Cottage
+X-WR-CALNAME:Sea View Cottage
+BEGIN:VEVENT
+UID:OB-123
+SEQUENCE:0
+DTSTAMP:<scrubbed>
+DTSTART;VALUE=DATE:20240101
+DTEND;VALUE=DATE:20240105
+X-MICROSOFT-CDO-ALLDAYEVENT:TRUE
+X-MICROSOFT-MSNCALENDAR-ALLDAYEVENT:TRUE
+SUMMARY:Owner Booking
+DESCRIPTION:Property: Sea View Cottage\\nBooking Ref: OB-123\\nArrival Date:
+  1st Jan 2024\\nDeparture Date: 5th Jan 2024\\nStatus: Owner Booking\\nBookin
+ g Type: Maintenance\\n
+STATUS:CONFIRMED
+X-MICROSOFT-CDO-BUSYSTATUS:BUSY
+END:VEVENT
+BEGIN:VEVENT
+UID:CB-456
+SEQUENCE:0
+DTSTAMP:<scrubbed>
+DTSTART;VALUE=DATE:20240312
+DTEND;VALUE=DATE:20240319
+X-MICROSOFT-CDO-ALLDAYEVENT:TRUE
+X-MICROSOFT-MSNCALENDAR-ALLDAYEVENT:TRUE
+SUMMARY:Jane Doe (2 adults\\, 1 kid)
+DESCRIPTION:Property: Sea View Cottage\\nBooking Ref / PBN: CB-456\\nArrival
+  Date: 12th Mar 2024\\nDeparture Date: 19th Mar 2024\\nStatus: Confirmed\\nNa
+ me: Jane Doe\\nEmail: jane@example.com\\nAdults: 2\\nTeenagers and Children: 
+ 1\\nInfants: 0\\n
+ATTENDEE;ROLE=REQ-PARTICIPANT;CUTYPE=INDIVIDUAL;CN="Jane Doe":MAILTO:jane@
+ example.com
+STATUS:CONFIRMED
+X-MICROSOFT-CDO-BUSYSTATUS:FREE
+END:VEVENT
+END:VCALENDAR"
+`;
