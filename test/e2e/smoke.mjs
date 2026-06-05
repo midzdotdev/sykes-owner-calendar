@@ -1,9 +1,8 @@
 // End-to-end smoke test: boots the BUILT Nitro server (.output/server/index.mjs)
-// and verifies it serves valid calendars over HTTP.
+// and verifies it serves a valid calendar over HTTP via the encrypted-token feed.
 //
 //   SMOKE_MODE=fixture (default) — outbound Sykes calls are mocked from fixtures
-//                                  (offline, no credentials). Checks the legacy
-//                                  route, the web UI page, and the /c token feed.
+//                                  (offline, no credentials). Also checks the web UI page.
 //   SMOKE_MODE=live               — hits the real Sykes site with real credentials
 //                                  from SYKES_EMAIL / SYKES_PASSWORD / SYKES_PROPERTY_ID.
 import { spawn } from "node:child_process";
@@ -30,8 +29,9 @@ if (MODE === "live" && (!process.env.SYKES_EMAIL || !process.env.SYKES_PASSWORD)
   process.exit(2);
 }
 
-// An ephemeral token keypair so the built server can decrypt /c links and serve
-// /api/pubkey during the test (the real key lives only in production).
+// An ephemeral token keypair so this throwaway server can decrypt the token we
+// build below — the real key lives only in production. In live mode the token
+// still carries the real credentials, so the Sykes sign-in is genuine.
 const { privateKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });
 const tokenPrivatePem = privateKey.export({ type: "pkcs8", format: "pem" });
 const tokenJwk = createPublicKey(privateKey).export({ format: "jwk" });
@@ -83,10 +83,14 @@ try {
   log(`mode=${MODE}, booting built server at ${BASE}`);
   await waitForServer();
 
-  // Legacy plaintext route (still supported).
-  const url = `${BASE}/bookings/${encodeURIComponent(propertyId)}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
-  log(`GET /bookings/${propertyId}`);
-  const res = await fetch(url);
+  // Encrypt a token client-side and fetch the calendar feed.
+  const token = await encryptCredentials(tokenPublicRaw, {
+    email,
+    password,
+    propertyIds: [propertyId],
+  });
+  log("GET /c/<token>");
+  const res = await fetch(`${BASE}/c/${token}`);
   const body = await res.text();
 
   assert(res.status === 200, `expected 200, got ${res.status}`);
@@ -98,7 +102,7 @@ try {
   assert(body.includes("END:VCALENDAR"), "VCALENDAR should be closed");
   const events = (body.match(/BEGIN:VEVENT/g) || []).length;
   assert(events >= 1, `expected at least one VEVENT, got ${events}`);
-  log(`legacy route served a valid ICS with ${events} event(s)`);
+  log(`token feed served a valid ICS with ${events} event(s)`);
 
   if (MODE === "fixture") {
     assert(events === 4, `fixture should yield 4 events, got ${events}`);
@@ -110,25 +114,7 @@ try {
     const homeBody = await home.text();
     assert(home.status === 200, `/ expected 200, got ${home.status}`);
     assert(homeBody.includes("Find my properties"), "/ should serve the owner form");
-
-    // Token feed: encrypt a token client-side, then fetch /c/<token>.
-    const token = await encryptCredentials(tokenPublicRaw, {
-      email: "x@y.com",
-      password: "pw",
-      propertyIds: [propertyId],
-    });
-    log("GET /c/<token>");
-    const feed = await fetch(`${BASE}/c/${token}`);
-    const feedBody = await feed.text();
-    assert(feed.status === 200, `/c expected 200, got ${feed.status}`);
-    assert(
-      (feed.headers.get("content-type") || "").includes("text/calendar"),
-      "/c content-type should be text/calendar"
-    );
-    const feedEvents = (feedBody.match(/BEGIN:VEVENT/g) || []).length;
-    assert(feedEvents === 4, `/c should yield 4 events, got ${feedEvents}`);
-    assert(feedBody.includes("customer1@example.com"), "/c attendee email should be present");
-    log(`web UI + token feed OK (${feedEvents} events)`);
+    log("web UI page served");
   }
 
   log("PASS");
