@@ -19,7 +19,7 @@ jobs:
           node-version: 24.x
       - run: node test/e2e/live-prod.mjs
         env:
-          PROD_URL: https://sykes-owner-calendar.vercel.app
+          PROD_URL: https://sykes-calendar.midz.dev
           SYKES_EMAIL: ${{ secrets.SYKES_EMAIL }}
           SYKES_PASSWORD: ${{ secrets.SYKES_PASSWORD }}
           SYKES_PROPERTY_ID: ${{ secrets.SYKES_PROPERTY_ID }}
