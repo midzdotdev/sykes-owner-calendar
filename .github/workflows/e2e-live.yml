@@ -1,9 +1,12 @@
 name: E2E live
 
-# Weekly smoke test against the real Sykes site, to catch upstream HTML/markup
-# changes (like the relocated customer name) before users hit a broken calendar.
-# Scheduled workflows run from the default branch; also dispatchable manually.
+# Smoke test against the real Sykes site, to catch upstream HTML/markup changes
+# (like the relocated customer name) before users hit a broken calendar.
+# Runs on merge to main (validate each landed change against the live site) and
+# weekly (catch Sykes-side changes during periods with no merges); also manual.
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: "0 6 * * 1" # 06:00 UTC every Monday
   workflow_dispatch:
