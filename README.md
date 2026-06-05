@@ -8,38 +8,12 @@ It works with the calendars most people already use, including **Apple Calendar*
 
 You only do this once. After that, the calendar looks after itself.
 
-### Step 1 — Make your personal calendar link
-
-Start with this web address:
-
-```
-https://sykes-owner-calendar.vercel.app/bookings/PROPERTY-NUMBER?email=YOUR-EMAIL&password=YOUR-PASSWORD
-```
-
-Now swap in your own details in place of the three capitalised words:
-
-- **PROPERTY-NUMBER** — the number for your property (see *Finding your property number* below).
-- **YOUR-EMAIL** — the email address you use to sign in to Sykes.
-- **YOUR-PASSWORD** — the password you use to sign in to Sykes.
-
-A finished link might look like this:
-
-```
-https://sykes-owner-calendar.vercel.app/bookings/21953?email=jane@example.com&password=mypassword
-```
-
-### Step 2 — Add the link to your calendar
-
-Adding a calendar this way is sometimes called *subscribing* to it. [This short guide](https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device) walks through how to do it in the most popular apps. Wherever it asks you to paste a calendar address, paste in your personal link from Step 1.
+1. Go to **[sykes-owner-calendar.vercel.app](https://sykes-owner-calendar.vercel.app)**.
+2. Enter the email and password you use to sign in to Sykes. (They're scrambled on your own device before anything is sent — see below.)
+3. Press **Find my properties**, tick the ones you'd like in your calendar, and press **Create my calendar link**.
+4. Press **Copy link**, then add it to your calendar app. Adding a calendar this way is sometimes called *subscribing*; [this short guide](https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device) shows how on the most popular apps — wherever it asks for a calendar address, paste in your link.
 
 That's everything — your bookings will appear, and the calendar will quietly refresh itself from time to time.
-
-## Finding your property number
-
-1. Sign in to your Sykes Cottages account.
-2. Open your **Bookings** page.
-3. If you have more than one property, choose the one you want from the menu near the top.
-4. Look at the web address along the very top of your browser. It ends in a number, and that number is your property number. (For example, in `.../owner/bookings/21953`, the property number is **21953**.)
 
 ## What you'll see
 
@@ -47,16 +21,14 @@ Each entry covers the nights a property is taken. Guest bookings show the guest'
 
 ## Please keep your link private
 
-Your personal link contains your Sykes email and password. That means **anyone who has the link can see your bookings — and could sign in to your Sykes account.** Treat the link like a house key:
+Your calendar link is like a key to your bookings: **anyone who has it can see them.** So:
 
 - Don't share it, email it around, or post it anywhere public.
 - Only add it to your own devices.
 
-**Why does it need my password?** The only way to read your bookings is to sign in to Sykes for you, exactly as you would yourself — there's genuinely no way around it. The tool only *reads* your bookings; it never changes anything in your account.
+The good news is that your password is **scrambled inside the link** — it's never written out in plain text and never leaves your device unscrambled. The tool only *reads* your bookings; it never changes anything in your Sykes account.
 
-**If you ever change your Sykes password**, your link will stop working. Just make a new link with your new password (Step 1) and add it to your calendar again.
-
-Use this at your own discretion.
+**To turn off a link** (say you shared it by accident), just change your Sykes password — every old link stops working straight away. Then make a fresh one with your new password.
 
 ---
 
@@ -66,13 +38,17 @@ Everything below is technical detail. You don't need any of it to use the calend
 
 ## How it works
 
-A small [Nitro](https://nitro.build) server written in TypeScript. When a request comes in for `/bookings/:propertyId`:
+A small [Nitro](https://nitro.build) server in TypeScript.
 
-1. It signs in to Sykes Cottages with the supplied email/password — `lib/http/getAuthenticatedSession.ts` (throws a clear error if the login is rejected).
-2. It scrapes the owner bookings page with [cheerio](https://cheerio.js.org) (`lib/http/getPropertyBookings.ts`) and validates each row against a [zod](https://zod.dev) schema (`lib/booking-schema.ts`).
-3. It builds an iCalendar document with [ical-generator](https://github.com/sebbo2002/ical-generator) (`lib/ical.ts`, dates via [date-fns](https://date-fns.org)) and returns it as `text/calendar`.
-
-Any other path redirects to this repository (`routes/[...fallback].ts`).
+- **Web UI** (`routes/index.get.ts`) — a framework-free page. The browser encrypts the owner's credentials with the server's public key (`public/crypto.js`, Web Crypto), so the plaintext never leaves the device; it then lists the owner's properties and builds a calendar link.
+- **Credential tokens** (`lib/token.ts` + `public/crypto.js`) — ECIES: P-256 ECDH + HKDF-SHA256 + AES-256-GCM, no dependencies. The server decrypts with its private key (`TOKEN_PRIVATE_KEY`).
+- **Routes:**
+  - `GET /` — the web UI.
+  - `GET /api/pubkey` — the server's public key.
+  - `POST /api/properties {token}` — the owner's properties, or a typed error.
+  - `GET /c/<token>` — calendar feed for a token (merges the selected properties).
+  - `GET /bookings/<id>?email&password` — the original plaintext feed (still supported).
+- **Scraping** (`lib/http/`) — sign in (`getAuthenticatedSession`, throws `AuthError`), list properties (`getProperties`), read bookings (`getPropertyBookings`, throws `ExtractionError` on a markup change), via [cheerio](https://cheerio.js.org) + [zod](https://zod.dev). Calendars are built with [ical-generator](https://github.com/sebbo2002/ical-generator) (`lib/ical.ts`).
 
 ## Requirements
 
@@ -82,30 +58,31 @@ Any other path redirects to this repository (`routes/[...fallback].ts`).
 
 | Command | What it does |
 |---|---|
-| `npm run dev` | Run the dev server |
+| `npm run dev` | Dev server |
 | `npm run build` | Build the production server into `.output/` |
 | `npm run preview` | Run the built server |
-| `npm test` | Unit tests (Vitest) — watch mode locally, single run in CI |
+| `npm test` | Unit tests (Vitest) — watch locally, single run in CI |
 | `npm run typecheck` | `tsc --noEmit` (Nitro's build does not type-check) |
-| `npm run test:e2e` | End-to-end smoke test of the built server, with Sykes calls mocked from fixtures |
-| `npm run test:e2e:live` | Same, against the real Sykes site (needs the `SYKES_*` env vars below) |
+| `npm run test:e2e` | End-to-end smoke of the built server (legacy route, web UI, `/c` feed), Sykes mocked from fixtures |
+| `npm run test:e2e:live` | Same, against the real Sykes site (needs `SYKES_*`) |
 
-## Testing layers
+## Secrets
 
-- **Unit** (`lib/**/*.test.ts`) — schema transforms, ICS generation (snapshot), cookie/auth helpers, and scraper parsing against a sanitized real-DOM fixture.
-- **Fixture e2e** (`test/e2e/`) — boots the built server and checks it serves a valid calendar over HTTP, with Sykes mocked from fixtures. Offline and deterministic; runs on every pull request.
-- **Live e2e** — the same end-to-end check against the real site (`SMOKE_MODE=live` plus `SYKES_EMAIL` / `SYKES_PASSWORD` / `SYKES_PROPERTY_ID`). It catches upstream breakage — a failed sign-in or changed page markup — before users do.
+| Secret | Where | How |
+|---|---|---|
+| `TOKEN_PRIVATE_KEY` (decrypts calendar links) | local `.env` + **Vercel** (mark Sensitive) + offline backup | `node scripts/generate-token-key.mjs`, then put `.token-key.pem` into Vercel |
+| `SYKES_*`, `TS_*` (CI only) | **GitHub Actions** | `gh secret set -f .env.ci` |
+
+`TOKEN_PRIVATE_KEY` is a value you own — it works on any host, so moving off Vercel never invalidates links (just set the same value on the new host). Rotating it *does* invalidate every link. Copy `.env.example` to `.env` for local development.
 
 ## Continuous integration
 
 - `.github/workflows/ci.yml` — typecheck + unit + fixture e2e on every pull request (Node 24).
-- `.github/workflows/e2e-live.yml` — the live check, on merge to `main`, weekly, and on demand.
-
-Sykes blocks GitHub's datacenter IP addresses, so the live workflow tunnels **only** the Sykes requests through a residential [Tailscale](https://tailscale.com) exit node: the action brings up `tailscaled` in userspace mode with an HTTP proxy, and the live step sets `HTTPS_PROXY` + `NODE_USE_ENV_PROXY` so just the server's outbound `fetch` egresses via the exit node. Required repo secrets / variables: `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET`, `TS_EXIT_NODE`, `SYKES_EMAIL`, `SYKES_PASSWORD`, `SYKES_PROPERTY_ID`.
+- `.github/workflows/e2e-live.yml` — the live check, on merge to `main`, weekly, and on demand; the Sykes requests tunnel through a residential [Tailscale](https://tailscale.com) exit node, because Sykes blocks datacenter IPs.
 
 ## Deployment
 
-Deployed on Vercel via Nitro's Vercel preset; the Node version is pinned to `24.x` through `engines.node`.
+Vercel via Nitro's Vercel preset; Node pinned to `24.x` via `engines.node`.
 
 ## Contributing
 

@@ -13,6 +13,7 @@ if (process.env.SMOKE_MODE !== "fixture") {
   const fxDir = new URL("../../lib/http/__fixtures__/", import.meta.url);
   const loginHtml = readFileSync(new URL("login-page.html", fxDir), "utf8");
   const bookingsHtml = readFileSync(new URL("owner-bookings.html", fxDir), "utf8");
+  const propertiesHtml = readFileSync(new URL("properties.html", fxDir), "utf8");
 
   const realFetch = globalThis.fetch;
 
@@ -37,6 +38,11 @@ if (process.env.SMOKE_MODE !== "fixture") {
 
     if (url.includes("sykescottages.co.uk/owner/bookings/")) {
       return new Response(bookingsHtml, { status: 200 });
+    }
+
+    // The property list lives on /owner/bookings (no id).
+    if (url.includes("sykescottages.co.uk/owner/bookings")) {
+      return new Response(propertiesHtml, { status: 200 });
     }
 
     return realFetch(input, init);
