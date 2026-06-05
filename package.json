@@ -9,7 +9,8 @@
     "build": "nitropack build",
     "preview": "node .output/server/index.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "nitropack prepare && tsc --noEmit"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
@@ -19,6 +20,8 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/node": "^24.13.0",
+    "typescript": "^5.9.3",
     "vitest": "^4.1.8"
   }
 }
