@@ -3,12 +3,16 @@ name: E2E live
 # Smoke test against the real Sykes site, to catch upstream HTML/markup changes
 # (like the relocated customer name) before users hit a broken calendar.
 #
-# Sykes blocks GitHub's datacenter IPs (the scrape returns 0 bookings from a
-# hosted runner, regardless of User-Agent), so this can't run on a plain
-# GitHub-hosted runner. Until it routes through a residential IP (Tailscale
-# exit node) it is manual-only; run it locally with `npm run test:e2e:live`.
-# The automatic push/cron triggers will be restored once tunnelling is set up.
+# Sykes blocks GitHub's datacenter IPs (0 bookings from a hosted runner), so the
+# Sykes requests are tunnelled through a residential Tailscale exit node (the
+# always-on Pi / Home Assistant). tailscaled runs in userspace mode exposing an
+# HTTP proxy on :1055; only the server's outbound fetch is sent through it
+# (NODE_USE_ENV_PROXY) — the rest of the job (npm, GitHub) stays direct.
 on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1" # 06:00 UTC every Monday
   workflow_dispatch:
 
 jobs:
@@ -22,8 +26,21 @@ jobs:
           cache: npm
       - run: corepack enable
       - run: npm ci
-      - run: npm run test:e2e:live
+      - name: Connect to Tailscale (userspace proxy on :1055)
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          args: --exit-node=homeassistant
+          tailscaled-args: --tun=userspace-networking --socks5-server=localhost:1055 --outbound-http-proxy-listen=localhost:1055
+      - name: Live smoke (Sykes calls tunnelled via the exit node)
+        run: npm run test:e2e:live
         env:
+          HTTP_PROXY: http://127.0.0.1:1055
+          HTTPS_PROXY: http://127.0.0.1:1055
+          NO_PROXY: 127.0.0.1,localhost
+          NODE_USE_ENV_PROXY: "1"
           SYKES_EMAIL: ${{ secrets.SYKES_EMAIL }}
           SYKES_PASSWORD: ${{ secrets.SYKES_PASSWORD }}
           SYKES_PROPERTY_ID: ${{ secrets.SYKES_PROPERTY_ID }}
