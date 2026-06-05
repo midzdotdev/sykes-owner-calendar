@@ -21,15 +21,25 @@ export const getPropertyBookings = async (params: {
 
   const rawBookings = $("#booking-list .row")
     .toArray()
-    .map((el) => {
-      const entries = $(".row-details .col > div:has(> span)", el).toArray();
+    .map((row) => {
+      const entries = $(".row-details .col > div:has(> span)", row)
+        .toArray()
+        .map((el) => [
+          $("span:nth-child(1)", el).text().trim(),
+          $("span:nth-child(2)", el).text().trim(),
+        ]);
 
-      return entries.map((el) => [
-        $("span:nth-child(1)", el).text().trim(),
-        $("span:nth-child(2)", el).text().trim(),
-      ]);
-    })
-    .map((entries) => Object.fromEntries(entries));
+      const booking: Record<string, string> = Object.fromEntries(entries);
+
+      // The customer name is no longer a label/value span pair: Sykes moved it
+      // into a `.booking-name-and-message-stack` wrapper whose spans are nested
+      // deeper, so the selector above skips it. Pull it out separately. Owner
+      // bookings have no name element, leaving the key absent (as the schema expects).
+      const name = $(".booking-name-display", row).first().text().trim();
+      if (name) booking.Name = name;
+
+      return booking;
+    });
 
   return z.array(Booking).parse(rawBookings);
 };
