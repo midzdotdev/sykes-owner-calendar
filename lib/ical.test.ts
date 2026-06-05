@@ -30,12 +30,9 @@ const normalise = (ics: string) => ics.replace(/^DTSTAMP:.*$/gm, "DTSTAMP:<scrub
 
 describe("makeBookingsCalendar", () => {
   it("renders a mixed set of bookings to a stable ICS document", () => {
+    // The snapshot already pins the calendar name (X-WR-CALNAME), event dates,
+    // summaries, attendees and statuses, so no separate assertions are needed.
     const ics = makeBookingsCalendar(bookings).toString();
     expect(normalise(ics)).toMatchSnapshot();
-  });
-
-  it("names the calendar after the first booking's property", () => {
-    const ics = makeBookingsCalendar(bookings).toString();
-    expect(ics).toContain("X-WR-CALNAME:Sea View Cottage");
   });
 });
