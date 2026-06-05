@@ -38,7 +38,7 @@ export const getAuthenticatedSession = async (params: {
   loginFormData.append("ticket", loginTicket);
   loginFormData.append("formName", "login");
 
-  await fetch("https://www.sykescottages.co.uk/account/login", {
+  const loginResp = await fetch("https://www.sykescottages.co.uk/account/login", {
     method: "POST",
     headers: {
       cookie: serialiseCookies(cookies),
@@ -47,7 +47,12 @@ export const getAuthenticatedSession = async (params: {
     body: loginFormData,
   });
 
-  // TODO: assert valid status
+  // A successful login redirects into the owner area; a failed one lands back on
+  // /account/login. Fail loudly so a red run clearly distinguishes an auth
+  // problem (bad/expired credentials) from a markup/extraction problem.
+  if (!loginResp.url || new URL(loginResp.url).pathname.startsWith("/account/login")) {
+    throw new Error("Sykes authentication failed — check the email and password");
+  }
 
   return { cookies };
 };
