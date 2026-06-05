@@ -13,6 +13,8 @@ jobs:
           node-version: 24.x
           cache: npm
       # `npm ci` runs the `prepare` script (nitropack prepare), which generates
-      # .nitro/types/tsconfig.json that the tests' tsconfig extends.
+      # .nitro/types/tsconfig.json that the typecheck and tests extend.
       - run: npm ci
+      # Nitro's build does not type-check (it transpiles via esbuild), so run tsc explicitly.
+      - run: npm run typecheck
       - run: npm test
