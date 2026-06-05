@@ -12,9 +12,13 @@ jobs:
         with:
           node-version: 24.x
           cache: npm
+      # Pin npm via corepack (packageManager field in package.json).
+      - run: corepack enable
       # `npm ci` runs the `prepare` script (nitropack prepare), which generates
       # .nitro/types/tsconfig.json that the typecheck and tests extend.
       - run: npm ci
       # Nitro's build does not type-check (it transpiles via esbuild), so run tsc explicitly.
       - run: npm run typecheck
       - run: npm test
+      # End-to-end smoke test against the built server, with Sykes calls mocked from fixtures.
+      - run: npm run test:e2e

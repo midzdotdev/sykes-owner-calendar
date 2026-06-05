@@ -1,0 +1,26 @@
+name: E2E live
+
+# Weekly smoke test against the real Sykes site, to catch upstream HTML/markup
+# changes (like the relocated customer name) before users hit a broken calendar.
+# Scheduled workflows run from the default branch; also dispatchable manually.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # 06:00 UTC every Monday
+  workflow_dispatch:
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: npm
+      - run: corepack enable
+      - run: npm ci
+      - run: npm run test:e2e:live
+        env:
+          SYKES_EMAIL: ${{ secrets.SYKES_EMAIL }}
+          SYKES_PASSWORD: ${{ secrets.SYKES_PASSWORD }}
+          SYKES_PROPERTY_ID: ${{ secrets.SYKES_PROPERTY_ID }}

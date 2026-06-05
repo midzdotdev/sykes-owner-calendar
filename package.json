@@ -1,5 +1,6 @@
 {
   "private": true,
+  "packageManager": "npm@11.6.2",
   "engines": {
     "node": "24.x"
   },
@@ -9,7 +10,9 @@
     "build": "nitropack build",
     "preview": "node .output/server/index.mjs",
     "test": "vitest",
-    "typecheck": "nitropack prepare && tsc --noEmit"
+    "typecheck": "nitropack prepare && tsc --noEmit",
+    "test:e2e": "npm run build && SMOKE_MODE=fixture node test/e2e/smoke.mjs",
+    "test:e2e:live": "npm run build && SMOKE_MODE=live node test/e2e/smoke.mjs"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",

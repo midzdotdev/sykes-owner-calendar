@@ -1,0 +1,45 @@
+<!doctype html>
+<html><body>
+<!-- E2E fixture: the real public Sykes login form subtree. Only the ticket value
+     is replaced with a placeholder. Used by the fixture-mode smoke test mock. -->
+<form method="post" action="/account/login">
+            
+<ul class="display-group " id="">
+                                <li class="email">
+                    <label class="required" for="email">
+                        Email address                    </label>
+                    
+<input name="email" id="email" value="" placeholder="Email address" tabindex="1" autofocus="1" type="email">                    
+                </li>
+                                                <li class="password">
+                    <label class="required" for="password">
+                        Sykes password                    </label>
+                    
+<input type="password" name="password" id="password" value="" placeholder="Password" tabindex="2" autocomplete="off">                    
+                </li>
+                                                <li class="show-password">
+                    
+<input type="hidden" name="showpassword" value="0"><input type="checkbox" name="showpassword" id="show-password" value="1" class="show-password" tabindex="3">                    <label class=" show-password" for="show-password">
+                        Show password                    </label>
+                </li>
+                    </ul>
+    
+	<p class="secondary-link login-sub-links">
+        <a href="/account/forgot_password" tabindex="5" id="forgot_password">
+            Forgot password?        </a>
+
+                <br>
+        	</p>
+
+        <div class="login-sub-links">
+        <a href="/account/one_click_login" tabindex="5" id="one_click_login">
+            Having trouble logging in?        </a>
+    </div>
+    
+        <p class="submit-wrapper ">
+<input type="submit" name="submit" id="submit" value="Log in" tabindex="3" class="button-call-to-action"></p>
+	
+<input type="hidden" name="ticket" value="e2e-test-ticket" id="ticket">	
+<input type="hidden" name="formName" value="login" id="formName">                <span class="create-account"><a href="/account/register" class="create-account-button" tabindex="6">Create account</a></span>
+    </form>
+</body></html>
