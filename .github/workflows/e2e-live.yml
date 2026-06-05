@@ -2,13 +2,13 @@ name: E2E live
 
 # Smoke test against the real Sykes site, to catch upstream HTML/markup changes
 # (like the relocated customer name) before users hit a broken calendar.
-# Runs on merge to main (validate each landed change against the live site) and
-# weekly (catch Sykes-side changes during periods with no merges); also manual.
+#
+# Sykes blocks GitHub's datacenter IPs (the scrape returns 0 bookings from a
+# hosted runner, regardless of User-Agent), so this can't run on a plain
+# GitHub-hosted runner. Until it routes through a residential IP (Tailscale
+# exit node) it is manual-only; run it locally with `npm run test:e2e:live`.
+# The automatic push/cron triggers will be restored once tunnelling is set up.
 on:
-  push:
-    branches: [main]
-  schedule:
-    - cron: "0 6 * * 1" # 06:00 UTC every Monday
   workflow_dispatch:
 
 jobs:
