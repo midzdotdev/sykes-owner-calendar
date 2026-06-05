@@ -17,10 +17,10 @@ const prodId: ICalCalendarProdIdData = {
   language: "EN",
 };
 
-export const makeBookingsCalendar = (bookings: Booking[]) =>
+export const makeBookingsCalendar = (bookings: Booking[], name?: string) =>
   ical({
     prodId,
-    name: bookings[0]?.Property ?? "Unknown Property",
+    name: name ?? bookings[0]?.Property ?? "Unknown Property",
     events: bookings.map((x) => getBookingICalEventData(x)),
   });
 
