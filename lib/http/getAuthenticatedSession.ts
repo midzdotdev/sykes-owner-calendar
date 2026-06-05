@@ -4,6 +4,7 @@ import {
   serialiseCookies,
 } from "../utils/cookies";
 import { USER_AGENT } from "./constants";
+import { AuthError } from "../errors";
 import * as cheerio from "cheerio";
 
 export interface SykesSession {
@@ -51,7 +52,7 @@ export const getAuthenticatedSession = async (params: {
   // /account/login. Fail loudly so a red run clearly distinguishes an auth
   // problem (bad/expired credentials) from a markup/extraction problem.
   if (!loginResp.url || new URL(loginResp.url).pathname.startsWith("/account/login")) {
-    throw new Error("Sykes authentication failed — check the email and password");
+    throw new AuthError("Sykes authentication failed — check the email and password");
   }
 
   return { cookies };

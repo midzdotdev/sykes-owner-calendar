@@ -4,6 +4,7 @@ import { Booking } from "../booking-schema";
 import { z } from "zod";
 import { serialiseCookies } from "../utils/cookies";
 import { USER_AGENT } from "./constants";
+import { ExtractionError } from "../errors";
 
 export const getPropertyBookings = async (params: {
   session: SykesSession;
@@ -43,5 +44,9 @@ export const getPropertyBookings = async (params: {
       return booking;
     });
 
-  return z.array(Booking).parse(rawBookings);
+  const parsed = z.array(Booking).safeParse(rawBookings);
+  if (!parsed.success) {
+    throw new ExtractionError("Could not read bookings — the Sykes page may have changed");
+  }
+  return parsed.data;
 };
