@@ -15,10 +15,10 @@
     "test:e2e:live": "npm run build && SMOKE_MODE=live node test/e2e/smoke.mjs"
   },
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12",
+    "cheerio": "^1.2.0",
     "date-fns": "^4.4.0",
     "ical-generator": "^11.0.0",
-    "nitropack": "latest",
+    "nitropack": "^2.13.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
