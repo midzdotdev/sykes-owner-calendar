@@ -3,6 +3,7 @@ import * as cheerio from "cheerio";
 import { Booking } from "../booking-schema";
 import { z } from "zod";
 import { serialiseCookies } from "../utils/cookies";
+import { USER_AGENT } from "./constants";
 
 export const getPropertyBookings = async (params: {
   session: SykesSession;
@@ -13,6 +14,7 @@ export const getPropertyBookings = async (params: {
     {
       headers: {
         cookie: serialiseCookies(params.session.cookies),
+        "user-agent": USER_AGENT,
       },
     }
   );

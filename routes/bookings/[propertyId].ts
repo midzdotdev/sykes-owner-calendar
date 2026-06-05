@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": `attachment; filename="${
-        bookings[0].Property ?? "Unknown Property"
+        bookings[0]?.Property ?? "Unknown Property"
       }.ics"`,
     },
   });

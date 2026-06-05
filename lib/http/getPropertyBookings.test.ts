@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { getPropertyBookings } from "./getPropertyBookings";
+import { USER_AGENT } from "./constants";
 import type { CustomerBooking } from "../booking-schema";
 
 // Real Sykes owner-bookings DOM, sanitized (see the fixture's header comment).
@@ -21,7 +22,7 @@ describe("getPropertyBookings", () => {
     await callWith({ PHPSESSID: "abc", session_id: "xyz" });
     expect(fetch).toHaveBeenCalledWith(
       "https://www.sykescottages.co.uk/owner/bookings/21953",
-      { headers: { cookie: "PHPSESSID=abc; session_id=xyz" } }
+      { headers: { cookie: "PHPSESSID=abc; session_id=xyz", "user-agent": USER_AGENT } }
     );
   });
 

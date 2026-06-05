@@ -35,4 +35,13 @@ describe("makeBookingsCalendar", () => {
     const ics = makeBookingsCalendar(bookings).toString();
     expect(normalise(ics)).toMatchSnapshot();
   });
+
+  it("renders a valid empty calendar when there are no bookings", () => {
+    // A property with no bookings must not crash on bookings[0].
+    const ics = makeBookingsCalendar([]).toString();
+    expect(ics).toContain("BEGIN:VCALENDAR");
+    expect(ics).toContain("END:VCALENDAR");
+    expect(ics).not.toContain("BEGIN:VEVENT");
+    expect(ics).toContain("X-WR-CALNAME:Unknown Property");
+  });
 });
