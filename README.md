@@ -70,14 +70,14 @@ A small [Nitro](https://nitro.build) server in TypeScript.
 | Secret | Where | How |
 |---|---|---|
 | `TOKEN_PRIVATE_KEY` (decrypts calendar links) | local `.env` + **Vercel** (mark Sensitive) + offline backup | `node scripts/generate-token-key.mjs`, then put `.token-key.pem` into Vercel |
-| `SYKES_*`, `TS_*` (CI only) | **GitHub Actions** | `gh secret set -f .env.ci` |
+| `SYKES_*` (live check only) | **GitHub Actions** | `gh secret set -f .env.ci` |
 
 `TOKEN_PRIVATE_KEY` is a value you own — it works on any host, so moving off Vercel never invalidates links (just set the same value on the new host). Rotating it *does* invalidate every link. Copy `.env.example` to `.env` for local development.
 
 ## Continuous integration
 
 - `.github/workflows/ci.yml` — typecheck + unit + fixture e2e on every pull request (Node 24).
-- `.github/workflows/e2e-live.yml` — the live check, on merge to `main`, weekly, and on demand; the Sykes requests tunnel through a residential [Tailscale](https://tailscale.com) exit node, because Sykes blocks datacenter IPs.
+- `.github/workflows/e2e-live.yml` — weekly (and on-demand) check that the **deployed** app still serves a real calendar, catching upstream Sykes changes. It hits the production endpoint directly; Sykes does not block Vercel's IPs, so no tunnel is needed.
 
 ## Deployment
 
