@@ -4,27 +4,34 @@
 // the full built endpoint over HTTP without network access or credentials.
 import { readFileSync } from "node:fs";
 
-const fxDir = new URL("../../lib/http/__fixtures__/", import.meta.url);
-const loginHtml = readFileSync(new URL("login-page.html", fxDir), "utf8");
-const bookingsHtml = readFileSync(new URL("owner-bookings.html", fxDir), "utf8");
+// Safety guard: this mock must NEVER affect a live run. It only patches fetch
+// when SMOKE_MODE=fixture; loaded in any other mode it leaves global fetch
+// untouched, so authentication and every other HTTP call go to the real network.
+if (process.env.SMOKE_MODE !== "fixture") {
+  console.warn("[mock-sykes] SMOKE_MODE is not 'fixture' — leaving fetch unmocked");
+} else {
+  const fxDir = new URL("../../lib/http/__fixtures__/", import.meta.url);
+  const loginHtml = readFileSync(new URL("login-page.html", fxDir), "utf8");
+  const bookingsHtml = readFileSync(new URL("owner-bookings.html", fxDir), "utf8");
 
-const realFetch = globalThis.fetch;
+  const realFetch = globalThis.fetch;
 
-globalThis.fetch = async (input, init) => {
-  const url = typeof input === "string" ? input : input.url;
-  const method = (init?.method ?? "GET").toUpperCase();
+  globalThis.fetch = async (input, init) => {
+    const url = typeof input === "string" ? input : input.url;
+    const method = (init?.method ?? "GET").toUpperCase();
 
-  if (url.includes("sykescottages.co.uk/account/login")) {
-    if (method === "POST") return new Response("ok", { status: 200 });
-    return new Response(loginHtml, {
-      status: 200,
-      headers: { "set-cookie": "PHPSESSID=e2e-smoke; Path=/; HttpOnly" },
-    });
-  }
+    if (url.includes("sykescottages.co.uk/account/login")) {
+      if (method === "POST") return new Response("ok", { status: 200 });
+      return new Response(loginHtml, {
+        status: 200,
+        headers: { "set-cookie": "PHPSESSID=e2e-smoke; Path=/; HttpOnly" },
+      });
+    }
 
-  if (url.includes("sykescottages.co.uk/owner/bookings/")) {
-    return new Response(bookingsHtml, { status: 200 });
-  }
+    if (url.includes("sykescottages.co.uk/owner/bookings/")) {
+      return new Response(bookingsHtml, { status: 200 });
+    }
 
-  return realFetch(input, init);
-};
+    return realFetch(input, init);
+  };
+}

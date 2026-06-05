@@ -29,13 +29,14 @@ if (MODE === "live" && (!process.env.SYKES_EMAIL || !process.env.SYKES_PASSWORD)
   process.exit(2);
 }
 
-// In fixture mode, preload the fetch mock into the server process.
-const nodeOptions = [
-  process.env.NODE_OPTIONS,
-  MODE === "fixture"
-    ? `--import ${new URL("./mock-sykes.mjs", import.meta.url).href}`
-    : "",
-]
+// In fixture mode, preload the fetch mock into the server process. In live mode
+// the mock is never added — and we strip it from any inherited NODE_OPTIONS as
+// well, so a live run can never have its HTTP calls (auth included) mocked.
+const mockImport = `--import ${new URL("./mock-sykes.mjs", import.meta.url).href}`;
+const inheritedNodeOptions = (process.env.NODE_OPTIONS ?? "")
+  .replace(/--import[= ]\S*mock-sykes\.mjs/g, "")
+  .trim();
+const nodeOptions = [inheritedNodeOptions, MODE === "fixture" ? mockImport : ""]
   .filter(Boolean)
   .join(" ");
 
