@@ -3,6 +3,7 @@ import {
   getSetCookiesFromHeaders,
   serialiseCookies,
 } from "../utils/cookies";
+import { USER_AGENT } from "./constants";
 import * as cheerio from "cheerio";
 
 export interface SykesSession {
@@ -14,7 +15,8 @@ export const getAuthenticatedSession = async (params: {
   password: string;
 }): Promise<SykesSession> => {
   const loginPageResp = await fetch(
-    "https://www.sykescottages.co.uk/account/login"
+    "https://www.sykescottages.co.uk/account/login",
+    { headers: { "user-agent": USER_AGENT } }
   );
 
   const cookies = getSetCookiesFromHeaders(loginPageResp.headers, [
@@ -40,6 +42,7 @@ export const getAuthenticatedSession = async (params: {
     method: "POST",
     headers: {
       cookie: serialiseCookies(cookies),
+      "user-agent": USER_AGENT,
     },
     body: loginFormData,
   });

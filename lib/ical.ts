@@ -20,7 +20,7 @@ const prodId: ICalCalendarProdIdData = {
 export const makeBookingsCalendar = (bookings: Booking[]) =>
   ical({
     prodId,
-    name: bookings[0].Property ?? "Unknown Property",
+    name: bookings[0]?.Property ?? "Unknown Property",
     events: bookings.map((x) => getBookingICalEventData(x)),
   });
 
