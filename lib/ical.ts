@@ -42,8 +42,8 @@ const getBookingICalEventData = (booking: Booking): ICalEventData => {
       : booking["Booking Ref / PBN"],
 
     allDay: true,
-    start: booking["Arrival Date"],
-    end: booking["Departure Date"],
+    start: allDayDate(booking["Arrival Date"]),
+    end: allDayDate(booking["Departure Date"]),
 
     busystatus: isOwnerBooking(booking)
       ? ICalEventBusyStatus.BUSY
@@ -80,6 +80,14 @@ const joinRecordEntries = (values: Record<string, number>) =>
     .filter(([_, qty]) => qty !== 0)
     .map(([unit, qty]) => qtyString(unit, qty))
     .join(", ");
+
+// All-day events are date-only. Arrival/Departure are parsed as *local*
+// midnight, but ical-generator serialises all-day dates in UTC — so under a
+// positive offset (e.g. BST) a local-midnight Date emits the previous day's
+// DATE. Re-anchor to UTC midnight using the local calendar components so the
+// emitted DATE is the actual booking day on any server timezone.
+const allDayDate = (date: Date): Date =>
+  new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 
 const dateString = (date: Date): string => datefns.format(date, "do MMM yyyy");
 
