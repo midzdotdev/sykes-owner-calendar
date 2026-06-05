@@ -17,7 +17,7 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "date-fns": "^4.4.0",
-    "ical-generator": "^6.0.1",
+    "ical-generator": "^11.0.0",
     "nitropack": "latest",
     "zod": "^4.4.3"
   },
