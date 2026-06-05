@@ -21,7 +21,14 @@ if (process.env.SMOKE_MODE !== "fixture") {
     const method = (init?.method ?? "GET").toUpperCase();
 
     if (url.includes("sykescottages.co.uk/account/login")) {
-      if (method === "POST") return new Response("ok", { status: 200 });
+      if (method === "POST") {
+        // Simulate a successful login: redirected into the owner area.
+        const res = new Response("ok", { status: 200 });
+        Object.defineProperty(res, "url", {
+          value: "https://www.sykescottages.co.uk/owner/dashboard",
+        });
+        return res;
+      }
       return new Response(loginHtml, {
         status: 200,
         headers: { "set-cookie": "PHPSESSID=e2e-smoke; Path=/; HttpOnly" },
