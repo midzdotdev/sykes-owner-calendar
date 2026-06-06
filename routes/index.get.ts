@@ -25,20 +25,22 @@ const PAGE = /* html */ `<!doctype html>
   }
   * { box-sizing:border-box; }
   html { -webkit-text-size-adjust:100%; }
-  body { margin:0; background:var(--bg); color:var(--ink);
+  body { margin:0; color:var(--ink); min-height:100vh;
     font:16px/1.6 "Hanken Grotesk", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    -webkit-font-smoothing:antialiased; }
+    -webkit-font-smoothing:antialiased;
+    background-color:#0c1828;
+    background-image:
+      radial-gradient(rgba(255,255,255,.075) 1.2px, transparent 1.3px),
+      radial-gradient(1100px 560px at 84% -14%, #2a456b 0%, #182a40 42%, rgba(12,24,40,0) 78%);
+    background-size:26px 26px, 100% 820px;
+    background-repeat:repeat, no-repeat;
+    background-attachment:fixed, fixed; }
   .wrap { max-width:660px; margin:0 auto; padding:0 22px; }
   h1, h2, .lname, .logo-text, .acct strong { font-family:"Sora", "Hanken Grotesk", system-ui, sans-serif; }
   a { color:var(--blue); }
 
-  /* ---- Masthead (navy header + hero) ---- */
-  .masthead { position:relative; overflow:hidden; color:#fff;
-    background:radial-gradient(1200px 520px at 82% -8%, #243a5c 0%, var(--navy) 42%, var(--navy-2) 100%); }
-  .masthead::after { content:""; position:absolute; left:0; right:0; bottom:0; height:1px; background:rgba(255,255,255,.06); }
-  .bloom { position:absolute; top:-70px; right:-90px; width:430px; height:430px; opacity:.5;
-    filter:drop-shadow(0 0 60px rgba(124,77,190,.4)); pointer-events:none; }
-  @media (max-width:620px){ .bloom { width:300px; height:300px; right:-120px; opacity:.38; } }
+  /* ---- Masthead (header + hero, over the page's dark canvas) ---- */
+  .masthead { position:relative; color:#fff; }
   @media (max-width:430px){ .logo-text { font-size:.82rem; letter-spacing:.1em; margin-left:10px; padding-left:10px; } }
 
   .topbar { display:flex; align-items:center; justify-content:space-between; padding:18px 0 4px; }
@@ -73,12 +75,18 @@ const PAGE = /* html */ `<!doctype html>
   .acct strong { display:block; color:var(--ink); font-size:1rem; font-weight:700; word-break:break-all; }
 
   label { display:block; font-weight:600; margin:1rem 0 .35rem; font-size:.94rem; }
-  input[type=email], input[type=password], textarea {
+  input[type=email], input[type=password], input[type=text], textarea {
     width:100%; padding:13px 14px; border:1.5px solid var(--line); border-radius:12px; font:inherit; background:#fbfcfe;
     color:var(--ink); transition:border-color .15s, box-shadow .15s; }
-  input[type=email]:focus, input[type=password]:focus, textarea:focus {
+  input[type=email]:focus, input[type=password]:focus, input[type=text]:focus, textarea:focus {
     outline:none; border-color:var(--blue); box-shadow:0 0 0 4px rgba(47,111,237,.14); background:#fff; }
   textarea { resize:none; margin-top:10px; font-size:.85rem; color:var(--muted); }
+  .pw-wrap { position:relative; }
+  .pw-wrap input { padding-right:46px; }
+  .pw-toggle { position:absolute; right:6px; top:50%; transform:translateY(-50%); display:inline-flex;
+    padding:8px; background:none; border:0; color:var(--muted); cursor:pointer; border-radius:8px; }
+  .pw-toggle:hover { color:var(--ink); background:#eef2f8; }
+  .pw-toggle svg { width:19px; height:19px; }
   .hint { color:var(--muted); font-size:.88rem; margin:.6rem 0 0; }
 
   button { font:inherit; font-weight:700; border:0; border-radius:12px; padding:13px 20px; cursor:pointer; transition:.16s; }
@@ -120,8 +128,10 @@ const PAGE = /* html */ `<!doctype html>
   .note { background:#fff5fa; border:1px solid #f6cfe4; border-radius:12px; padding:13px 15px; color:#9b1f64; font-size:.88rem; margin-top:18px; }
   .error { color:var(--err); font-weight:600; margin:.9rem 0 0; }
   .hidden { display:none; }
-  .foot { text-align:center; color:var(--muted); font-size:.84rem; margin:22px auto 0; max-width:34em; }
-  .foot a { font-weight:600; }
+  .foot { text-align:center; color:rgba(255,255,255,.72); font-size:.84rem; margin:22px auto 0; max-width:36em; }
+  .foot strong { color:#fff; }
+  .foot a { font-weight:600; color:#9cc0ff; }
+  .disclaimer { color:rgba(255,255,255,.56); font-size:.78rem; margin-top:9px; }
 
   @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
   @keyframes swapIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
@@ -134,25 +144,6 @@ const PAGE = /* html */ `<!doctype html>
 </head>
 <body>
   <div class="masthead">
-    <svg class="bloom" viewBox="0 0 200 200" aria-hidden="true">
-      <defs>
-        <radialGradient id="petal" cx="50%" cy="38%" r="65%">
-          <stop offset="0" stop-color="#a78bfa" /><stop offset="1" stop-color="#5b2a9e" />
-        </radialGradient>
-      </defs>
-      <g fill="url(#petal)" opacity=".92">
-        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(0 100 100)" />
-        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(40 100 100)" />
-        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(80 100 100)" />
-        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(120 100 100)" />
-        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(160 100 100)" />
-        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(200 100 100)" />
-        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(240 100 100)" />
-        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(280 100 100)" />
-        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(320 100 100)" />
-      </g>
-      <circle cx="100" cy="100" r="15" fill="#c4b5fd" />
-    </svg>
     <div class="wrap">
       <header class="topbar">
         <a class="logo" href="/">
@@ -181,7 +172,13 @@ const PAGE = /* html */ `<!doctype html>
           <label for="email">Your Sykes email</label>
           <input id="email" type="email" autocomplete="username" required />
           <label for="password">Your Sykes password</label>
-          <input id="password" type="password" autocomplete="current-password" required />
+          <div class="pw-wrap">
+            <input id="password" type="password" autocomplete="current-password" required />
+            <button type="button" id="pwToggle" class="pw-toggle" aria-label="Show password">
+              <svg class="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+              <svg class="eye-off hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+            </button>
+          </div>
           <p class="hint">Your email and password are encrypted on your device and stay encrypted in transit — only this tool can unscramble them.</p>
           <div class="row" style="margin-top:16px"><button id="find" class="primary" type="submit">Find my properties</button></div>
           <p id="creds-error" class="error hidden"></p>
@@ -230,6 +227,7 @@ const PAGE = /* html */ `<!doctype html>
       </div>
 
       <p class="foot">This tool only ever <strong>reads</strong> your bookings — it never changes anything in your Sykes account. <a href="https://github.com/midzdotdev/sykes-owner-calendar" target="_blank" rel="noopener">How it works</a>.</p>
+      <p class="foot disclaimer">An independent project — not affiliated with, or endorsed by, Sykes Holiday Cottages.</p>
     </div>
   </main>
 
@@ -296,6 +294,15 @@ $("creds").addEventListener("submit", async (e) => {
 });
 
 $("back").addEventListener("click", () => transitionTo($("creds"), $("result")));
+
+$("pwToggle").addEventListener("click", () => {
+  const pw = $("password");
+  const show = pw.type === "password";
+  pw.type = show ? "text" : "password";
+  $("pwToggle").querySelector(".eye").classList.toggle("hidden", show);
+  $("pwToggle").querySelector(".eye-off").classList.toggle("hidden", !show);
+  $("pwToggle").setAttribute("aria-label", show ? "Hide password" : "Show password");
+});
 
 async function setupResults(properties) {
   // Individual tab: one pre-computed link per property (so Copy is synchronous).
