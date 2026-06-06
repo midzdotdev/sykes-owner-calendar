@@ -10,8 +10,8 @@ You only do this once. After that, the calendar looks after itself.
 
 1. Go to **[sykes-calendar.midz.dev](https://sykes-calendar.midz.dev)**.
 2. Enter the email and password you use to sign in to Sykes. (They're scrambled on your own device before anything is sent — see below.)
-3. Press **Find my properties** and tick the ones you want. You'll get a **separate calendar for each property** (tick "Put them all in one calendar" if you'd rather have everything together).
-4. Press **Create my links**, then press **Copy** next to each property and add it to your calendar app. Adding a calendar this way is sometimes called *subscribing*; [this short guide](https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device) shows how on the most popular apps — wherever it asks for a calendar address, paste in your link.
+3. Press **Find my properties** — you'll get a **separate calendar for each property**.
+4. Press **Copy** next to a property and add it to your calendar app. Adding a calendar this way is sometimes called *subscribing*; [this short guide](https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device) shows how on the most popular apps — wherever it asks for a calendar address, paste in your link.
 
 That's everything — your bookings will appear, and the calendar will quietly refresh itself from time to time.
 
@@ -46,7 +46,7 @@ A small [Nitro](https://nitro.build) server in TypeScript.
   - `GET /` — the web UI.
   - `GET /api/pubkey` — the server's public key.
   - `POST /api/properties {token}` — the owner's properties, or a typed error.
-  - `GET /c/<token>` — calendar feed for a token (merges the selected properties).
+  - `GET /c/<token>` — the calendar feed for the token's property.
 - **Scraping** (`lib/http/`) — sign in (`getAuthenticatedSession`, throws `AuthError`), list properties (`getProperties`), read bookings (`getPropertyBookings`, throws `ExtractionError` on a markup change), via [cheerio](https://cheerio.js.org) + [zod](https://zod.dev). Calendars are built with [ical-generator](https://github.com/sebbo2002/ical-generator) (`lib/ical.ts`).
 
 ## Requirements

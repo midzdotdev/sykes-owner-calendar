@@ -1,6 +1,6 @@
 // The owner-facing web UI. A single, framework-free page that encrypts the
 // owner's credentials in the browser (public/crypto.js + the server public key),
-// lists their properties, and builds a calendar link per property to copy.
+// lists their properties, and gives a copyable calendar link for each.
 const PAGE = /* html */ `<!doctype html>
 <html lang="en">
 <head>
@@ -17,7 +17,6 @@ const PAGE = /* html */ `<!doctype html>
   p.lede { color:var(--muted); margin:.25rem 0 1.5rem; }
   .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:22px; margin-bottom:18px; }
   label { display:block; font-weight:600; margin:.6rem 0 .3rem; }
-  label.inline { display:flex; gap:9px; align-items:center; font-weight:500; margin:.9rem 0 0; }
   input[type=email], input[type=password], textarea {
     width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:9px; font:inherit; background:#fff; }
   textarea { resize:none; margin-top:8px; }
@@ -28,9 +27,6 @@ const PAGE = /* html */ `<!doctype html>
   .primary:disabled { opacity:.55; cursor:default; }
   .ghost { background:#eef2f8; color:var(--ink); }
   .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-  .props { list-style:none; padding:0; margin:.4rem 0 0; }
-  .props li { padding:9px 4px; border-bottom:1px solid var(--line); }
-  .props label { display:flex; gap:10px; font-weight:500; margin:0; align-items:center; }
   .links { list-style:none; padding:0; margin:.4rem 0 0; }
   .links li { padding:11px 4px; border-bottom:1px solid var(--line); }
   .links .top { display:flex; gap:10px; align-items:center; justify-content:space-between; }
@@ -59,19 +55,11 @@ const PAGE = /* html */ `<!doctype html>
     <p id="creds-error" class="error hidden"></p>
   </form>
 
-  <form id="pick" class="card hidden">
-    <p class="step">Step 2</p>
-    <label>Choose which properties to include</label>
-    <ul id="props" class="props"></ul>
-    <label class="inline"><input type="checkbox" id="combine" /> Put them all in one calendar instead of one each</label>
-    <div class="row" style="margin-top:14px"><button id="make" class="primary" type="submit">Create my links</button></div>
-  </form>
-
   <section id="result" class="card hidden">
-    <p class="step">Step 3 — your link<span id="plural">s</span></p>
-    <p class="hint">Press <strong>Copy</strong> next to each one and add it to your calendar app (Apple Calendar, Google Calendar, Outlook). <a href="https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device" target="_blank" rel="noopener">How to add a calendar by link</a>.</p>
+    <p class="step">Step 2 — your calendars</p>
+    <p class="hint">You get a separate calendar for each property. Press <strong>Copy</strong> next to one and add it to your calendar app (Apple Calendar, Google Calendar, Outlook). <a href="https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device" target="_blank" rel="noopener">How to add a calendar by link</a>.</p>
     <ul id="links" class="links"></ul>
-    <p class="note">Keep these links private — anyone who has one can see those bookings. To turn a link off, change your Sykes password.</p>
+    <p class="note">Keep these links private — anyone who has one can see that property's bookings. To turn a link off, change your Sykes password.</p>
   </section>
 </main>
 
@@ -80,7 +68,6 @@ import { encryptCredentials } from "/crypto.js";
 
 const $ = (id) => document.getElementById(id);
 let publicKey = null;
-let properties = [];
 
 async function getPublicKey() {
   if (!publicKey) publicKey = (await (await fetch("/api/pubkey")).json()).publicKey;
@@ -95,21 +82,27 @@ $("creds").addEventListener("submit", async (e) => {
   const btn = $("find");
   btn.disabled = true; btn.textContent = "Checking…";
   try {
-    const token = await encryptCredentials(await getPublicKey(), creds());
+    const pub = await getPublicKey();
+    const c = creds();
     const res = await fetch("/api/properties", {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ token }),
+      body: JSON.stringify({ token: await encryptCredentials(pub, c) }),
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       throw new Error(body?.data?.message || "Something went wrong. Please try again.");
     }
-    properties = (await res.json()).properties;
-    $("props").innerHTML = properties.map((p) =>
-      \`<li><label><input type="checkbox" name="prop" value="\${p.id}" checked /> \${p.name}</label></li>\`
-    ).join("");
-    $("pick").classList.remove("hidden");
-    $("result").classList.add("hidden");
+    const properties = (await res.json()).properties;
+
+    // Pre-compute a calendar link per property now — not in the Copy handler — so
+    // the click can write to the clipboard synchronously, inside the user gesture.
+    const rows = await Promise.all(properties.map(async (p) => ({
+      name: p.name,
+      link: \`\${location.origin}/c/\${await encryptCredentials(pub, { ...c, propertyIds: [p.id] })}\`,
+    })));
+    renderLinks(rows);
+    $("result").classList.remove("hidden");
+    $("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (e2) {
     err.textContent = e2.message; err.classList.remove("hidden");
   } finally {
@@ -117,29 +110,7 @@ $("creds").addEventListener("submit", async (e) => {
   }
 });
 
-$("pick").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const ids = [...document.querySelectorAll('input[name="prop"]:checked')].map((c) => c.value);
-  if (!ids.length) return;
-
-  const pub = await getPublicKey();
-  const c = creds();
-  const combine = $("combine").checked;
-
-  // Pre-compute each link so the Copy click can write to the clipboard
-  // synchronously (browsers require it inside the user gesture).
-  let rows;
-  if (combine) {
-    const token = await encryptCredentials(pub, { ...c, propertyIds: ids });
-    rows = [{ name: "All selected properties", link: \`\${location.origin}/c/\${token}\` }];
-  } else {
-    rows = await Promise.all(ids.map(async (id) => ({
-      name: properties.find((p) => p.id === id)?.name ?? id,
-      link: \`\${location.origin}/c/\${await encryptCredentials(pub, { ...c, propertyIds: [id] })}\`,
-    })));
-  }
-
-  $("plural").textContent = rows.length === 1 ? "" : "s";
+function renderLinks(rows) {
   $("links").innerHTML = rows.map((r, i) => \`
     <li>
       <div class="top">
@@ -153,11 +124,15 @@ $("pick").addEventListener("submit", async (e) => {
     </li>\`).join("");
 
   $("links").querySelectorAll("button.copy").forEach((btn) => {
+    let timer;
     btn.addEventListener("click", async () => {
       const li = btn.closest("li");
       try {
         await navigator.clipboard.writeText(rows[+btn.dataset.i].link);
-        li.querySelector(".copied").classList.remove("hidden");
+        const copied = li.querySelector(".copied");
+        copied.classList.remove("hidden");
+        clearTimeout(timer);
+        timer = setTimeout(() => copied.classList.add("hidden"), 2000);
       } catch {
         // Clipboard blocked — reveal the link so it can be copied by hand.
         const ta = li.querySelector(".reveal");
@@ -165,10 +140,7 @@ $("pick").addEventListener("submit", async (e) => {
       }
     });
   });
-
-  $("result").classList.remove("hidden");
-  $("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
-});
+}
 </script>
 </body>
 </html>`;
