@@ -130,8 +130,10 @@ const PAGE = /* html */ `<!doctype html>
   .note { background:#fff5fa; border:1px solid #f6cfe4; border-radius:12px; padding:13px 15px; color:#9b1f64; font-size:.88rem; margin-top:18px; }
   .error { color:var(--err); font-weight:600; margin:.9rem 0 0; }
   .hidden { display:none; }
-  .foot { text-align:center; color:rgba(255,255,255,.72); font-size:.84rem; margin:22px auto 0; max-width:36em; }
-  .foot a { font-weight:600; color:#9cc0ff; }
+  .foot { text-align:center; color:rgba(255,255,255,.72); font-size:.84rem; margin:42px auto 0; max-width:36em; }
+  .foot a { font-weight:500; color:rgba(255,255,255,.78); text-decoration:underline;
+    text-decoration-color:rgba(255,255,255,.25); text-underline-offset:2px; }
+  .foot a:hover { color:#fff; text-decoration-color:rgba(255,255,255,.55); }
   .disclaimer { color:rgba(255,255,255,.56); font-size:.78rem; margin-top:9px; }
 
   @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
