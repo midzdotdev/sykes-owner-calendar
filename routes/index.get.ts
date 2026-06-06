@@ -134,7 +134,7 @@ const PAGE = /* html */ `<!doctype html>
   .foot a { font-weight:500; color:rgba(255,255,255,.78); text-decoration:underline;
     text-decoration-color:rgba(255,255,255,.25); text-underline-offset:2px; }
   .foot a:hover { color:#fff; text-decoration-color:rgba(255,255,255,.55); }
-  .disclaimer { color:rgba(255,255,255,.56); font-size:.78rem; margin-top:9px; }
+  .disclaimer { color:rgba(255,255,255,.56); font-size:.78rem; }
 
   @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
   @keyframes swapIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
