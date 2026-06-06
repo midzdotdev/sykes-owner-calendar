@@ -28,7 +28,7 @@ const PAGE = /* html */ `<!doctype html>
     font:16px/1.6 "Hanken Grotesk", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     -webkit-font-smoothing:antialiased; }
   .wrap { max-width:660px; margin:0 auto; padding:0 22px; }
-  h1, h2, .lname, .logo b, .acct strong { font-family:"Sora", "Hanken Grotesk", system-ui, sans-serif; }
+  h1, h2, .lname, .logo-text, .acct strong { font-family:"Sora", "Hanken Grotesk", system-ui, sans-serif; }
   a { color:var(--blue); }
 
   /* ---- Masthead (navy header + hero) ---- */
@@ -38,12 +38,14 @@ const PAGE = /* html */ `<!doctype html>
   .bloom { position:absolute; top:-70px; right:-90px; width:430px; height:430px; opacity:.5;
     filter:drop-shadow(0 0 60px rgba(124,77,190,.4)); pointer-events:none; }
   @media (max-width:620px){ .bloom { width:300px; height:300px; right:-120px; opacity:.38; } }
+  @media (max-width:430px){ .logo-text { font-size:.72rem; letter-spacing:.1em; margin-left:10px; padding-left:10px; } }
 
   .topbar { display:flex; align-items:center; justify-content:space-between; padding:18px 0 4px; }
-  .logo { display:inline-flex; align-items:center; gap:11px; color:#fff; text-decoration:none; letter-spacing:.2px; }
-  .logo .mark { width:30px; height:30px; color:#fff; flex:0 0 auto; }
-  .logo span { font-size:1.02rem; font-weight:500; opacity:.9; }
-  .logo b { font-weight:800; letter-spacing:.4px; }
+  .logo { display:inline-flex; align-items:center; color:#fff; text-decoration:none; }
+  .logo .mark { width:27px; height:27px; flex:0 0 auto; }
+  .logo-text { margin-left:13px; padding:6px 0 6px 13px; border-left:1px solid rgba(255,255,255,.38);
+    font-size:.86rem; font-weight:500; letter-spacing:.16em; text-transform:uppercase; line-height:1; white-space:nowrap; }
+  .logo-text b { font-weight:800; }
   .navlink { color:rgba(255,255,255,.82); text-decoration:none; font-size:.9rem; font-weight:600;
     border:1px solid rgba(255,255,255,.18); padding:7px 13px; border-radius:999px; transition:.18s; }
   .navlink:hover { background:rgba(255,255,255,.1); color:#fff; }
@@ -153,11 +155,11 @@ const PAGE = /* html */ `<!doctype html>
     <div class="wrap">
       <header class="topbar">
         <a class="logo" href="/">
-          <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
-            <circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" stroke-width="1.6" />
-            <path d="M6 22.5 L13.5 10 L18 16.5 L21 12.5 L26 22.5 Z" fill="currentColor" />
+          <svg class="mark" viewBox="0 0 25.28 25.28" fill="currentColor" aria-hidden="true">
+            <path d="M118.938,128.417l-1.826-1.819v-3.164a1.053,1.053,0,0,0-2.106,0v1.051l-2.405-2.4a1.051,1.051,0,0,0-1.489,0l-6.337,6.336a1.053,1.053,0,1,0,1.489,1.489l5.592-5.592,5.592,5.592a1.053,1.053,0,1,0,1.489-1.489" transform="translate(-99.221 -113.569)" />
+            <path d="M86.426,73.79A12.636,12.636,0,1,0,99.061,86.426,12.636,12.636,0,0,0,86.426,73.79m0,2.106a10.529,10.529,0,1,1-7.445,3.077A10.529,10.529,0,0,1,86.426,75.9" transform="translate(-73.79 -73.79)" />
           </svg>
-          <span>Sykes <b>Owner Calendar</b></span>
+          <span class="logo-text"><b>Sykes</b> Owner Calendar</span>
         </a>
         <a class="navlink" href="https://github.com/midzdotdev/sykes-owner-calendar" target="_blank" rel="noopener">About</a>
       </header>
