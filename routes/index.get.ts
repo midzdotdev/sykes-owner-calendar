@@ -179,7 +179,7 @@ const PAGE = /* html */ `<!doctype html>
               <svg class="eye-off hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
             </button>
           </div>
-          <p class="hint">Your email and password are encrypted on your device and stay encrypted in transit — only this tool can unscramble them.</p>
+          <p class="hint">Your email and password are encrypted on your device and stay encrypted in transit — only this tool can decrypt them.</p>
           <div class="row" style="margin-top:16px"><button id="find" class="primary" type="submit">Find my properties</button></div>
           <p id="creds-error" class="error hidden"></p>
         </form>
