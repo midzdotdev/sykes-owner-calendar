@@ -15,12 +15,12 @@ const PAGE = /* html */ `<!doctype html>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --navy:#16273c; --navy-2:#0c1828; --ink:#1a2a3c; --muted:#5d6e7e; --line:#e5eaf1;
-    --blue:#2f6fed; --blue-dark:#2159cc; --magenta:#cf1f86; --purple:#8b5cf6;
-    --bg:#eef2f7; --card:#ffffff; --ok:#0f8a55; --err:#c4332b;
+    --ink:#1a2a3c; --muted:#5d6e7e; --line:#e5eaf1;
+    --blue:#2f6fed; --blue-dark:#2159cc; --magenta:#cf1f86;
+    --card:#ffffff; --ok:#0f8a55; --err:#c4332b;
     --shadow:0 18px 40px -18px rgba(15,32,56,.34);
   }
   * { box-sizing:border-box; }
@@ -48,7 +48,7 @@ const PAGE = /* html */ `<!doctype html>
   .logo { display:inline-flex; align-items:center; color:#fff; text-decoration:none; }
   .logo .mark { width:27px; height:27px; flex:0 0 auto; }
   .logo-text { margin-left:13px; padding:6px 0 6px 13px; border-left:1px solid rgba(255,255,255,.38);
-    font-size:.98rem; font-weight:500; letter-spacing:.15em; text-transform:uppercase; line-height:1; white-space:nowrap; }
+    font-size:.98rem; font-weight:400; letter-spacing:.15em; text-transform:uppercase; line-height:1; white-space:nowrap; }
   .logo-text b { font-weight:800; }
   .navlink { color:rgba(255,255,255,.82); text-decoration:none; font-size:.9rem; font-weight:600;
     border:1px solid rgba(255,255,255,.18); padding:7px 13px; border-radius:999px; transition:.18s; }
@@ -131,7 +131,6 @@ const PAGE = /* html */ `<!doctype html>
   .error { color:var(--err); font-weight:600; margin:.9rem 0 0; }
   .hidden { display:none; }
   .foot { text-align:center; color:rgba(255,255,255,.72); font-size:.84rem; margin:22px auto 0; max-width:36em; }
-  .foot strong { color:#fff; }
   .foot a { font-weight:600; color:#9cc0ff; }
   .disclaimer { color:rgba(255,255,255,.56); font-size:.78rem; margin-top:9px; }
 
@@ -159,7 +158,7 @@ const PAGE = /* html */ `<!doctype html>
       </header>
       <div class="hero">
         <p class="eyebrow reveal-anim d1">For property owners</p>
-        <h1 class="reveal-anim d2">Your bookings, in your own <span class="hl">calendar</span>.</h1>
+        <h1 class="reveal-anim d2">Your bookings, in<br />your <span class="hl">own calendar</span>.</h1>
         <p class="lede reveal-anim d3">Add your Sykes Cottages bookings to the calendar on your phone or computer — set it up once and it stays up to date on its own.</p>
       </div>
     </div>
@@ -228,7 +227,7 @@ const PAGE = /* html */ `<!doctype html>
         </div>
       </div>
 
-      <p class="foot disclaimer">An independent project by <a href="https://github.com/midzdotdev" target="_blank" rel="noopener">James Middleton</a> — not affiliated with, or endorsed by, <a href="https://www.sykescottages.co.uk/" target="_blank" rel="noopener">SYKES COTTAGES LTD</a>.</p>
+      <p class="foot disclaimer">An independent project by <a href="https://github.com/midzdotdev" target="_blank" rel="noopener">James Middleton</a> —<br />not affiliated with, or endorsed by, <a href="https://www.sykescottages.co.uk/" target="_blank" rel="noopener">SYKES COTTAGES LTD</a>.</p>
     </div>
   </main>
 
