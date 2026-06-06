@@ -229,7 +229,7 @@ const PAGE = /* html */ `<!doctype html>
       </div>
 
       <p class="foot">This tool only ever <strong>reads</strong> your bookings — it never changes anything in your Sykes account. <a href="https://github.com/midzdotdev/sykes-owner-calendar" target="_blank" rel="noopener">How it works</a>.</p>
-      <p class="foot disclaimer">An independent project — not affiliated with, or endorsed by, Sykes Holiday Cottages.</p>
+      <p class="foot disclaimer">An independent project — not affiliated with, or endorsed by, <a href="https://www.sykescottages.co.uk/" target="_blank" rel="noopener">Sykes Cottages Ltd</a>.</p>
     </div>
   </main>
 
