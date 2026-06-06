@@ -3,9 +3,9 @@
 // lists their properties, and offers either a calendar per property or one
 // combined calendar (optionally "all properties, now and in future").
 //
-// Visual language mirrors sykescottages.co.uk: deep-navy masthead with a purple
-// "bloom" petal motif, royal-blue primary actions, a magenta accent, and clean
-// white cards on a soft-grey canvas.
+// One card that swaps between a sign-in view and a calendars view. Visual
+// language mirrors sykescottages.co.uk: deep-navy masthead with a purple
+// "bloom" petal motif, royal-blue primary actions, and a magenta accent.
 const PAGE = /* html */ `<!doctype html>
 <html lang="en">
 <head>
@@ -28,7 +28,7 @@ const PAGE = /* html */ `<!doctype html>
     font:16px/1.6 "Hanken Grotesk", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     -webkit-font-smoothing:antialiased; }
   .wrap { max-width:660px; margin:0 auto; padding:0 22px; }
-  h1, h2, .lname, .step, .logo b { font-family:"Sora", "Hanken Grotesk", system-ui, sans-serif; }
+  h1, h2, .lname, .logo b, .acct strong { font-family:"Sora", "Hanken Grotesk", system-ui, sans-serif; }
   a { color:var(--blue); }
 
   /* ---- Masthead (navy header + hero) ---- */
@@ -54,12 +54,20 @@ const PAGE = /* html */ `<!doctype html>
   .hero h1 { font-size:clamp(2rem, 5.4vw, 2.85rem); line-height:1.08; font-weight:800; margin:0 0 14px; letter-spacing:-.01em; }
   .hero .lede { font-size:1.06rem; color:#c4d2e2; margin:0; max-width:30em; }
 
-  /* ---- Content (cards lift over the masthead) ---- */
+  /* ---- Content (one card lifts over the masthead) ---- */
   .content { position:relative; padding:0 0 72px; margin-top:-60px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:26px 26px;
-    margin-bottom:18px; box-shadow:var(--shadow); }
-  .step { font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--magenta); font-weight:700; margin:0 0 .5rem; }
-  .card h2 { font-size:1.18rem; margin:0 0 .2rem; font-weight:700; }
+    box-shadow:var(--shadow); overflow:hidden; }
+  .card h2 { font-size:1.22rem; margin:0 0 1rem; font-weight:700; }
+
+  /* account bar (calendars view) */
+  .acctbar { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  .back { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; padding:0;
+    border-radius:11px; background:#eef2f8; color:var(--ink); flex:0 0 auto; }
+  .back:hover { background:#e2e9f3; }
+  .back svg { width:19px; height:19px; }
+  .acct { font-size:.84rem; color:var(--muted); line-height:1.25; }
+  .acct strong { display:block; color:var(--ink); font-size:1rem; font-weight:700; word-break:break-all; }
 
   label { display:block; font-weight:600; margin:1rem 0 .35rem; font-size:.94rem; }
   input[type=email], input[type=password], textarea {
@@ -112,10 +120,11 @@ const PAGE = /* html */ `<!doctype html>
   .foot a { font-weight:600; }
 
   @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+  @keyframes swapIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
   @keyframes fade { from { opacity:0; } to { opacity:1; } }
   .reveal-anim { opacity:0; animation:fadeUp .6s cubic-bezier(.2,.7,.2,1) forwards; }
+  .swap { animation:swapIn .42s cubic-bezier(.2,.7,.2,1); }
   .d1 { animation-delay:.06s; } .d2 { animation-delay:.15s; } .d3 { animation-delay:.24s; } .d4 { animation-delay:.36s; }
-  #result:not(.hidden) { animation:fadeUp .5s cubic-bezier(.2,.7,.2,1); }
   @media (prefers-reduced-motion: reduce) { * { animation:none !important; } .reveal-anim { opacity:1; } }
 </style>
 </head>
@@ -161,52 +170,60 @@ const PAGE = /* html */ `<!doctype html>
 
   <main class="content">
     <div class="wrap">
-      <form id="creds" class="card reveal-anim d4">
-        <p class="step">Step 1</p>
-        <h2>Sign in to Sykes</h2>
-        <label for="email">Your Sykes email</label>
-        <input id="email" type="email" autocomplete="username" required />
-        <label for="password">Your Sykes password</label>
-        <input id="password" type="password" autocomplete="current-password" required />
-        <p class="hint">Your email and password are encrypted on this device before anything is sent.</p>
-        <div class="row" style="margin-top:16px"><button id="find" class="primary" type="submit">Find my properties</button></div>
-        <p id="creds-error" class="error hidden"></p>
-      </form>
+      <div class="card reveal-anim d4">
+        <!-- View: sign in -->
+        <form id="creds">
+          <h2>Sign in to Sykes</h2>
+          <label for="email">Your Sykes email</label>
+          <input id="email" type="email" autocomplete="username" required />
+          <label for="password">Your Sykes password</label>
+          <input id="password" type="password" autocomplete="current-password" required />
+          <p class="hint">Your email and password are encrypted on this device before anything is sent.</p>
+          <div class="row" style="margin-top:16px"><button id="find" class="primary" type="submit">Find my properties</button></div>
+          <p id="creds-error" class="error hidden"></p>
+        </form>
 
-      <section id="result" class="card hidden">
-        <p class="step">Step 2</p>
-        <h2>Your calendars</h2>
-        <p id="noprops" class="hint hidden">We couldn't find any properties on your account. If you have some, please try again shortly.</p>
-
-        <div id="tabs" class="hidden">
-          <div class="tabbar" role="tablist" style="margin-top:14px">
-            <button type="button" class="tab active" data-tab="individual">A calendar per property</button>
-            <button type="button" class="tab" data-tab="combined">One combined calendar</button>
+        <!-- View: calendars -->
+        <div id="result" class="hidden">
+          <div class="acctbar">
+            <button type="button" class="back" id="back" aria-label="Use a different account">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+            </button>
+            <div class="acct">Signed in as <strong id="acctEmail"></strong></div>
           </div>
+          <h2>Your calendars</h2>
+          <p id="noprops" class="hint hidden">We couldn't find any properties on your account. If you have some, please try again shortly.</p>
 
-          <div class="tabpanel" data-panel="individual">
-            <p class="hint">A separate calendar for each property. Press <strong>Copy</strong> and add it to your calendar app (Apple Calendar, Google Calendar, Outlook). <a href="https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device" target="_blank" rel="noopener">How to add a calendar by link</a>.</p>
-            <ul id="links" class="links"></ul>
-          </div>
-
-          <div class="tabpanel hidden" data-panel="combined">
-            <p class="hint">One calendar with every property's bookings together — each event is labelled with its property.</p>
-            <label class="includeall"><input type="checkbox" id="includeAll" checked /> Include all my properties (now and any I add later)</label>
-            <p class="orpick" id="orpick">Or choose specific properties</p>
-            <ul id="combinedProps" class="props"></ul>
-            <div class="top" style="margin-top:10px">
-              <span class="lname">Combined calendar</span>
-              <span class="row">
-                <button type="button" class="ghost small" id="copyCombined">Copy</button>
-                <span id="copiedCombined" class="copied hidden">Copied ✓</span>
-              </span>
+          <div id="tabs" class="hidden">
+            <div class="tabbar" role="tablist">
+              <button type="button" class="tab active" data-tab="individual">A calendar per property</button>
+              <button type="button" class="tab" data-tab="combined">One combined calendar</button>
             </div>
-            <textarea id="combinedReveal" class="reveal hidden" rows="3" readonly></textarea>
-          </div>
 
-          <p class="note">Keep these links private — anyone who has one can see those bookings. To turn a link off, change your Sykes password.</p>
+            <div class="tabpanel" data-panel="individual">
+              <p class="hint">A separate calendar for each property. Press <strong>Copy</strong> and add it to your calendar app (Apple Calendar, Google Calendar, Outlook). <a href="https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device" target="_blank" rel="noopener">How to add a calendar by link</a>.</p>
+              <ul id="links" class="links"></ul>
+            </div>
+
+            <div class="tabpanel hidden" data-panel="combined">
+              <p class="hint">One calendar with every property's bookings together — each event is labelled with its property.</p>
+              <label class="includeall"><input type="checkbox" id="includeAll" checked /> Include all my properties (now and any I add later)</label>
+              <p class="orpick" id="orpick">Or choose specific properties</p>
+              <ul id="combinedProps" class="props"></ul>
+              <div class="top" style="margin-top:10px">
+                <span class="lname">Combined calendar</span>
+                <span class="row">
+                  <button type="button" class="ghost small" id="copyCombined">Copy</button>
+                  <span id="copiedCombined" class="copied hidden">Copied ✓</span>
+                </span>
+              </div>
+              <textarea id="combinedReveal" class="reveal hidden" rows="3" readonly></textarea>
+            </div>
+
+            <p class="note">Keep these links private — anyone who has one can see those bookings. To turn a link off, change your Sykes password.</p>
+          </div>
         </div>
-      </section>
+      </div>
 
       <p class="foot">Your password is encrypted on your device — this tool only ever <strong>reads</strong> your bookings. <a href="https://github.com/midzdotdev/sykes-owner-calendar" target="_blank" rel="noopener">How it works</a>.</p>
     </div>
@@ -229,6 +246,15 @@ const creds = () => ({ email: $("email").value.trim(), password: $("password").v
 const linkFor = async (propertyIds) =>
   \`\${location.origin}/c/\${await encryptCredentials(pub, { ...c, propertyIds })}\`;
 
+// Swap the single card between its two views, re-triggering the entrance animation.
+function transitionTo(show, hide) {
+  hide.classList.add("hidden");
+  show.classList.remove("hidden", "swap");
+  void show.offsetWidth;
+  show.classList.add("swap");
+  document.querySelector(".card").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
 $("creds").addEventListener("submit", async (e) => {
   e.preventDefault();
   const err = $("creds-error");
@@ -248,6 +274,7 @@ $("creds").addEventListener("submit", async (e) => {
     }
     const properties = (await res.json()).properties;
 
+    $("acctEmail").textContent = c.email;
     if (!properties.length) {
       $("noprops").classList.remove("hidden");
       $("tabs").classList.add("hidden");
@@ -256,14 +283,15 @@ $("creds").addEventListener("submit", async (e) => {
       await setupResults(properties);
       $("tabs").classList.remove("hidden");
     }
-    $("result").classList.remove("hidden");
-    $("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    transitionTo($("result"), $("creds"));
   } catch (e2) {
     err.textContent = e2.message; err.classList.remove("hidden");
   } finally {
     btn.disabled = false; btn.textContent = "Find my properties";
   }
 });
+
+$("back").addEventListener("click", () => transitionTo($("creds"), $("result")));
 
 async function setupResults(properties) {
   // Individual tab: one pre-computed link per property (so Copy is synchronous).
