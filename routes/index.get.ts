@@ -38,13 +38,13 @@ const PAGE = /* html */ `<!doctype html>
   .bloom { position:absolute; top:-70px; right:-90px; width:430px; height:430px; opacity:.5;
     filter:drop-shadow(0 0 60px rgba(124,77,190,.4)); pointer-events:none; }
   @media (max-width:620px){ .bloom { width:300px; height:300px; right:-120px; opacity:.38; } }
-  @media (max-width:430px){ .logo-text { font-size:.72rem; letter-spacing:.1em; margin-left:10px; padding-left:10px; } }
+  @media (max-width:430px){ .logo-text { font-size:.82rem; letter-spacing:.1em; margin-left:10px; padding-left:10px; } }
 
   .topbar { display:flex; align-items:center; justify-content:space-between; padding:18px 0 4px; }
   .logo { display:inline-flex; align-items:center; color:#fff; text-decoration:none; }
   .logo .mark { width:27px; height:27px; flex:0 0 auto; }
   .logo-text { margin-left:13px; padding:6px 0 6px 13px; border-left:1px solid rgba(255,255,255,.38);
-    font-size:.86rem; font-weight:500; letter-spacing:.16em; text-transform:uppercase; line-height:1; white-space:nowrap; }
+    font-size:.98rem; font-weight:500; letter-spacing:.15em; text-transform:uppercase; line-height:1; white-space:nowrap; }
   .logo-text b { font-weight:800; }
   .navlink { color:rgba(255,255,255,.82); text-decoration:none; font-size:.9rem; font-weight:600;
     border:1px solid rgba(255,255,255,.18); padding:7px 13px; border-radius:999px; transition:.18s; }
