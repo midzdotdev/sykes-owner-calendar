@@ -10,14 +10,16 @@ You only do this once. After that, the calendar looks after itself.
 
 1. Go to **[sykes-calendar.midz.dev](https://sykes-calendar.midz.dev)**.
 2. Enter the email and password you use to sign in to Sykes. (They're scrambled on your own device before anything is sent — see below.)
-3. Press **Find my properties** — you'll get a **separate calendar for each property**.
-4. Press **Copy** next to a property and add it to your calendar app. Adding a calendar this way is sometimes called *subscribing*; [this short guide](https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device) shows how on the most popular apps — wherever it asks for a calendar address, paste in your link.
+3. Press **Find my properties**, then pick how you'd like your calendars:
+   - **A calendar per property** — a separate link for each cottage. Recommended: most calendar apps colour-code them, so they're easy to tell apart.
+   - **One combined calendar** — everything in a single calendar, with each booking labelled by its property. Leave *Include all my properties* ticked and any cottage you add in future is picked up automatically, or untick it to choose specific ones.
+4. Press **Copy** next to the calendar you want and add it to your calendar app. Adding a calendar this way is sometimes called *subscribing*; [this short guide](https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device) shows how on the most popular apps — wherever it asks for a calendar address, paste in your link.
 
 That's everything — your bookings will appear, and the calendar will quietly refresh itself from time to time.
 
 ## What you'll see
 
-Each entry covers the nights a property is taken. Guest bookings show the guest's name and how many people are coming, the dates you've reserved for yourself appear as your own bookings, and cancelled bookings are marked as cancelled.
+Each entry covers the nights a property is taken. Guest bookings show the guest's name and how many people are coming, the dates you've reserved for yourself appear as your own bookings, and cancelled bookings are marked as cancelled. In a combined calendar, each booking is also labelled with its property, so you can tell your cottages apart.
 
 ## Please keep your link private
 
@@ -40,13 +42,13 @@ Everything below is technical detail. You don't need any of it to use the calend
 
 A small [Nitro](https://nitro.build) server in TypeScript.
 
-- **Web UI** (`routes/index.get.ts`) — a framework-free page. The browser encrypts the owner's credentials with the server's public key (`public/crypto.js`, Web Crypto), so the plaintext never leaves the device; it then lists the owner's properties and builds a calendar link.
+- **Web UI** (`routes/index.get.ts`) — a framework-free page, styled after sykescottages.co.uk. The browser encrypts the owner's credentials with the server's public key (`public/crypto.js`, Web Crypto), so the plaintext never leaves the device; it then lists the owner's properties and builds either a calendar per property or one combined calendar.
 - **Credential tokens** (`lib/token.ts` + `public/crypto.js`) — ECIES: P-256 ECDH + HKDF-SHA256 + AES-256-GCM, no dependencies. The server decrypts with its private key (`TOKEN_PRIVATE_KEY`).
 - **Routes:**
   - `GET /` — the web UI.
   - `GET /api/pubkey` — the server's public key.
   - `POST /api/properties {token}` — the owner's properties, or a typed error.
-  - `GET /c/<token>` — the calendar feed for the token's property.
+  - `GET /c/<token>` — the calendar feed for a token: one property, a chosen set, or `all` (resolved live, so new properties are picked up). Combined feeds prefix each event with its property.
 - **Scraping** (`lib/http/`) — sign in (`getAuthenticatedSession`, throws `AuthError`), list properties (`getProperties`), read bookings (`getPropertyBookings`, throws `ExtractionError` on a markup change), via [cheerio](https://cheerio.js.org) + [zod](https://zod.dev). Calendars are built with [ical-generator](https://github.com/sebbo2002/ical-generator) (`lib/ical.ts`).
 
 ## Requirements
