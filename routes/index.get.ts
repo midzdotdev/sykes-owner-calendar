@@ -2,107 +2,215 @@
 // owner's credentials in the browser (public/crypto.js + the server public key),
 // lists their properties, and offers either a calendar per property or one
 // combined calendar (optionally "all properties, now and in future").
+//
+// Visual language mirrors sykescottages.co.uk: deep-navy masthead with a purple
+// "bloom" petal motif, royal-blue primary actions, a magenta accent, and clean
+// white cards on a soft-grey canvas.
 const PAGE = /* html */ `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Sykes Owner Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root { --ink:#1d2433; --muted:#5b6577; --line:#e3e7ee; --brand:#1f6feb; --bg:#f6f8fb; --ok:#0f7b3f; --err:#b42318; }
-  * { box-sizing: border-box; }
+  :root {
+    --navy:#16273c; --navy-2:#0c1828; --ink:#1a2a3c; --muted:#5d6e7e; --line:#e5eaf1;
+    --blue:#2f6fed; --blue-dark:#2159cc; --magenta:#cf1f86; --purple:#8b5cf6;
+    --bg:#eef2f7; --card:#ffffff; --ok:#0f8a55; --err:#c4332b;
+    --shadow:0 18px 40px -18px rgba(15,32,56,.34);
+  }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
   body { margin:0; background:var(--bg); color:var(--ink);
-    font:16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-  main { max-width:560px; margin:0 auto; padding:32px 20px 64px; }
-  h1 { font-size:1.6rem; margin:0 0 .25rem; }
-  p.lede { color:var(--muted); margin:.25rem 0 1.5rem; }
-  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:22px; margin-bottom:18px; }
-  label { display:block; font-weight:600; margin:.6rem 0 .3rem; }
+    font:16px/1.6 "Hanken Grotesk", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:660px; margin:0 auto; padding:0 22px; }
+  h1, h2, .lname, .step, .logo b { font-family:"Sora", "Hanken Grotesk", system-ui, sans-serif; }
+  a { color:var(--blue); }
+
+  /* ---- Masthead (navy header + hero) ---- */
+  .masthead { position:relative; overflow:hidden; color:#fff;
+    background:radial-gradient(1200px 520px at 82% -8%, #243a5c 0%, var(--navy) 42%, var(--navy-2) 100%); }
+  .masthead::after { content:""; position:absolute; left:0; right:0; bottom:0; height:1px; background:rgba(255,255,255,.06); }
+  .bloom { position:absolute; top:-70px; right:-90px; width:430px; height:430px; opacity:.5;
+    filter:drop-shadow(0 0 60px rgba(124,77,190,.4)); pointer-events:none; }
+  @media (max-width:620px){ .bloom { width:300px; height:300px; right:-120px; opacity:.38; } }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:18px 0 4px; }
+  .logo { display:inline-flex; align-items:center; gap:11px; color:#fff; text-decoration:none; letter-spacing:.2px; }
+  .logo .mark { width:30px; height:30px; color:#fff; flex:0 0 auto; }
+  .logo span { font-size:1.02rem; font-weight:500; opacity:.9; }
+  .logo b { font-weight:800; letter-spacing:.4px; }
+  .navlink { color:rgba(255,255,255,.82); text-decoration:none; font-size:.9rem; font-weight:600;
+    border:1px solid rgba(255,255,255,.18); padding:7px 13px; border-radius:999px; transition:.18s; }
+  .navlink:hover { background:rgba(255,255,255,.1); color:#fff; }
+
+  .hero { position:relative; padding:34px 0 92px; max-width:560px; }
+  .eyebrow { display:inline-block; font-size:.74rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:#ff8fce; margin:0 0 14px; }
+  .hero h1 { font-size:clamp(2rem, 5.4vw, 2.85rem); line-height:1.08; font-weight:800; margin:0 0 14px; letter-spacing:-.01em; }
+  .hero .lede { font-size:1.06rem; color:#c4d2e2; margin:0; max-width:30em; }
+
+  /* ---- Content (cards lift over the masthead) ---- */
+  .content { position:relative; padding:0 0 72px; margin-top:-60px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:26px 26px;
+    margin-bottom:18px; box-shadow:var(--shadow); }
+  .step { font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--magenta); font-weight:700; margin:0 0 .5rem; }
+  .card h2 { font-size:1.18rem; margin:0 0 .2rem; font-weight:700; }
+
+  label { display:block; font-weight:600; margin:1rem 0 .35rem; font-size:.94rem; }
   input[type=email], input[type=password], textarea {
-    width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:9px; font:inherit; background:#fff; }
-  textarea { resize:none; margin-top:8px; }
-  .hint { color:var(--muted); font-size:.86rem; margin:.5rem 0 0; }
-  button { font:inherit; font-weight:600; border:0; border-radius:9px; padding:11px 16px; cursor:pointer; }
-  button.small { padding:7px 12px; font-size:.9rem; }
-  button:disabled { opacity:.55; cursor:default; }
-  .primary { background:var(--brand); color:#fff; }
+    width:100%; padding:13px 14px; border:1.5px solid var(--line); border-radius:12px; font:inherit; background:#fbfcfe;
+    color:var(--ink); transition:border-color .15s, box-shadow .15s; }
+  input[type=email]:focus, input[type=password]:focus, textarea:focus {
+    outline:none; border-color:var(--blue); box-shadow:0 0 0 4px rgba(47,111,237,.14); background:#fff; }
+  textarea { resize:none; margin-top:10px; font-size:.85rem; color:var(--muted); }
+  .hint { color:var(--muted); font-size:.88rem; margin:.6rem 0 0; }
+
+  button { font:inherit; font-weight:700; border:0; border-radius:12px; padding:13px 20px; cursor:pointer; transition:.16s; }
+  button:disabled { opacity:.5; cursor:default; }
+  button.small { padding:9px 15px; font-size:.9rem; border-radius:10px; }
+  .primary { background:var(--blue); color:#fff; box-shadow:0 8px 18px -8px rgba(47,111,237,.7); }
+  .primary:hover:not(:disabled) { background:var(--blue-dark); transform:translateY(-1px); }
+  .primary:active { transform:translateY(0); }
   .ghost { background:#eef2f8; color:var(--ink); }
+  .ghost:hover:not(:disabled) { background:#e2e9f3; }
   .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-  .tabbar { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:16px; }
-  .tab { background:none; color:var(--muted); border-radius:0; padding:9px 12px; margin-bottom:-1px; border-bottom:2px solid transparent; }
-  .tab.active { color:var(--ink); border-bottom-color:var(--brand); }
-  .tabpanel { animation:none; }
-  .links { list-style:none; padding:0; margin:.4rem 0 0; }
-  .links li { padding:11px 4px; border-bottom:1px solid var(--line); }
+
+  /* ---- Tabs (segmented control) ---- */
+  .tabbar { display:flex; background:#eef2f7; border:1px solid var(--line); border-radius:13px; padding:4px; gap:4px; margin:.2rem 0 18px; }
+  .tab { flex:1; background:none; color:var(--muted); border-radius:9px; padding:10px 10px; font-weight:700; font-size:.92rem; }
+  .tab.active { background:#fff; color:var(--ink); box-shadow:0 2px 6px -1px rgba(20,40,70,.16); }
+  .tab:hover:not(.active) { color:var(--ink); }
+  .tabpanel { animation:fade .35s ease; }
+
+  .links { list-style:none; padding:0; margin:.2rem 0 0; }
+  .links li { display:flex; flex-direction:column; gap:0; padding:14px 2px; border-bottom:1px solid var(--line); }
+  .links li:last-child { border-bottom:0; }
   .top { display:flex; gap:10px; align-items:center; justify-content:space-between; }
-  .lname { font-weight:600; }
-  .props { list-style:none; padding:0; margin:.2rem 0 .6rem; }
-  .props li { padding:7px 2px; }
-  .props label { display:flex; gap:9px; align-items:center; font-weight:500; margin:0; }
-  .props label.disabled { opacity:.5; }
-  .includeall { display:flex; gap:10px; align-items:flex-start; background:#eef4ff; border:1px solid #d4e2fb;
-    border-radius:10px; padding:11px 13px; font-weight:600; margin:.2rem 0 .4rem; cursor:pointer; }
-  .includeall input { margin-top:3px; flex:0 0 auto; }
-  .orpick { color:var(--muted); font-size:.82rem; font-weight:600; margin:.6rem 0 0; }
-  .orpick.disabled { opacity:.5; }
-  .copied { color:var(--ok); font-weight:600; font-size:.9rem; }
+  .lname { font-weight:700; font-size:1.02rem; }
+  .copied { color:var(--ok); font-weight:700; font-size:.9rem; display:inline-flex; align-items:center; gap:4px; }
+
+  .includeall { display:flex; gap:11px; align-items:flex-start; background:linear-gradient(180deg,#f1f6ff,#eaf1ff);
+    border:1.5px solid #cfe0fb; border-radius:13px; padding:13px 15px; font-weight:700; margin:.3rem 0 .2rem; cursor:pointer; }
+  .includeall input { margin-top:3px; flex:0 0 auto; width:17px; height:17px; accent-color:var(--blue); }
+  .orpick { color:var(--muted); font-size:.8rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; margin:.9rem 0 .1rem; }
+  .orpick.disabled { opacity:.45; }
+  .props { list-style:none; padding:0; margin:.2rem 0 .4rem; }
+  .props li { padding:8px 2px; }
+  .props label { display:flex; gap:10px; align-items:center; font-weight:500; margin:0; font-size:1rem; }
+  .props label.disabled { opacity:.45; }
+  .props input { width:17px; height:17px; accent-color:var(--blue); }
+
+  .note { background:#fff5fa; border:1px solid #f6cfe4; border-radius:12px; padding:13px 15px; color:#9b1f64; font-size:.88rem; margin-top:18px; }
+  .error { color:var(--err); font-weight:600; margin:.9rem 0 0; }
   .hidden { display:none; }
-  .error { color:var(--err); font-weight:500; margin:.8rem 0 0; }
-  .note { background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:12px 14px; color:#7c4a03; font-size:.9rem; margin-top:16px; }
-  a { color:var(--brand); }
-  .step { font-size:.8rem; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); margin:0 0 .4rem; }
+  .foot { text-align:center; color:var(--muted); font-size:.84rem; margin:22px auto 0; max-width:34em; }
+  .foot a { font-weight:600; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+  @keyframes fade { from { opacity:0; } to { opacity:1; } }
+  .reveal-anim { opacity:0; animation:fadeUp .6s cubic-bezier(.2,.7,.2,1) forwards; }
+  .d1 { animation-delay:.06s; } .d2 { animation-delay:.15s; } .d3 { animation-delay:.24s; } .d4 { animation-delay:.36s; }
+  #result:not(.hidden) { animation:fadeUp .5s cubic-bezier(.2,.7,.2,1); }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; } .reveal-anim { opacity:1; } }
 </style>
 </head>
 <body>
-<main>
-  <h1>Sykes Owner Calendar</h1>
-  <p class="lede">Add your Sykes Cottages bookings to the calendar on your phone or computer, kept up to date automatically.</p>
-
-  <form id="creds" class="card">
-    <p class="step">Step 1</p>
-    <label for="email">Your Sykes email</label>
-    <input id="email" type="email" autocomplete="username" required />
-    <label for="password">Your Sykes password</label>
-    <input id="password" type="password" autocomplete="current-password" required />
-    <p class="hint">Your email and password are encrypted on this device before anything is sent.</p>
-    <div class="row" style="margin-top:14px"><button id="find" class="primary" type="submit">Find my properties</button></div>
-    <p id="creds-error" class="error hidden"></p>
-  </form>
-
-  <section id="result" class="card hidden">
-    <p class="step">Step 2 — your calendars</p>
-    <p id="noprops" class="hint hidden">We couldn't find any properties on your account. If you have some, please try again shortly.</p>
-
-    <div id="tabs" class="hidden">
-      <div class="tabbar">
-        <button type="button" class="tab active" data-tab="individual">A calendar per property</button>
-        <button type="button" class="tab" data-tab="combined">One combined calendar</button>
+  <div class="masthead">
+    <svg class="bloom" viewBox="0 0 200 200" aria-hidden="true">
+      <defs>
+        <radialGradient id="petal" cx="50%" cy="38%" r="65%">
+          <stop offset="0" stop-color="#a78bfa" /><stop offset="1" stop-color="#5b2a9e" />
+        </radialGradient>
+      </defs>
+      <g fill="url(#petal)" opacity=".92">
+        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(0 100 100)" />
+        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(40 100 100)" />
+        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(80 100 100)" />
+        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(120 100 100)" />
+        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(160 100 100)" />
+        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(200 100 100)" />
+        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(240 100 100)" />
+        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(280 100 100)" />
+        <ellipse cx="100" cy="52" rx="20" ry="46" transform="rotate(320 100 100)" />
+      </g>
+      <circle cx="100" cy="100" r="15" fill="#c4b5fd" />
+    </svg>
+    <div class="wrap">
+      <header class="topbar">
+        <a class="logo" href="/">
+          <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" stroke-width="1.6" />
+            <path d="M6 22.5 L13.5 10 L18 16.5 L21 12.5 L26 22.5 Z" fill="currentColor" />
+          </svg>
+          <span>Sykes <b>Owner Calendar</b></span>
+        </a>
+        <a class="navlink" href="https://github.com/midzdotdev/sykes-owner-calendar" target="_blank" rel="noopener">About</a>
+      </header>
+      <div class="hero">
+        <p class="eyebrow reveal-anim d1">For property owners</p>
+        <h1 class="reveal-anim d2">Your bookings, in your own calendar.</h1>
+        <p class="lede reveal-anim d3">Add your Sykes Cottages bookings to the calendar on your phone or computer — set it up once and it stays up to date on its own.</p>
       </div>
-
-      <div class="tabpanel" data-panel="individual">
-        <p class="hint">A separate calendar for each property. Press <strong>Copy</strong> and add it to your calendar app (Apple Calendar, Google Calendar, Outlook). <a href="https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device" target="_blank" rel="noopener">How to add a calendar by link</a>.</p>
-        <ul id="links" class="links"></ul>
-      </div>
-
-      <div class="tabpanel hidden" data-panel="combined">
-        <p class="hint">One calendar with every property's bookings together — each event is labelled with its property.</p>
-        <label class="includeall"><input type="checkbox" id="includeAll" checked /> Include all my properties (now and any I add later)</label>
-        <p class="orpick" id="orpick">Or choose specific properties</p>
-        <ul id="combinedProps" class="props"></ul>
-        <div class="top">
-          <span class="lname">Combined calendar</span>
-          <span class="row">
-            <button type="button" class="ghost small" id="copyCombined">Copy</button>
-            <span id="copiedCombined" class="copied hidden">Copied ✓</span>
-          </span>
-        </div>
-        <textarea id="combinedReveal" class="reveal hidden" rows="3" readonly></textarea>
-      </div>
-
-      <p class="note">Keep these links private — anyone who has one can see those bookings. To turn a link off, change your Sykes password.</p>
     </div>
-  </section>
-</main>
+  </div>
+
+  <main class="content">
+    <div class="wrap">
+      <form id="creds" class="card reveal-anim d4">
+        <p class="step">Step 1</p>
+        <h2>Sign in to Sykes</h2>
+        <label for="email">Your Sykes email</label>
+        <input id="email" type="email" autocomplete="username" required />
+        <label for="password">Your Sykes password</label>
+        <input id="password" type="password" autocomplete="current-password" required />
+        <p class="hint">Your email and password are encrypted on this device before anything is sent.</p>
+        <div class="row" style="margin-top:16px"><button id="find" class="primary" type="submit">Find my properties</button></div>
+        <p id="creds-error" class="error hidden"></p>
+      </form>
+
+      <section id="result" class="card hidden">
+        <p class="step">Step 2</p>
+        <h2>Your calendars</h2>
+        <p id="noprops" class="hint hidden">We couldn't find any properties on your account. If you have some, please try again shortly.</p>
+
+        <div id="tabs" class="hidden">
+          <div class="tabbar" role="tablist" style="margin-top:14px">
+            <button type="button" class="tab active" data-tab="individual">A calendar per property</button>
+            <button type="button" class="tab" data-tab="combined">One combined calendar</button>
+          </div>
+
+          <div class="tabpanel" data-panel="individual">
+            <p class="hint">A separate calendar for each property. Press <strong>Copy</strong> and add it to your calendar app (Apple Calendar, Google Calendar, Outlook). <a href="https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device" target="_blank" rel="noopener">How to add a calendar by link</a>.</p>
+            <ul id="links" class="links"></ul>
+          </div>
+
+          <div class="tabpanel hidden" data-panel="combined">
+            <p class="hint">One calendar with every property's bookings together — each event is labelled with its property.</p>
+            <label class="includeall"><input type="checkbox" id="includeAll" checked /> Include all my properties (now and any I add later)</label>
+            <p class="orpick" id="orpick">Or choose specific properties</p>
+            <ul id="combinedProps" class="props"></ul>
+            <div class="top" style="margin-top:10px">
+              <span class="lname">Combined calendar</span>
+              <span class="row">
+                <button type="button" class="ghost small" id="copyCombined">Copy</button>
+                <span id="copiedCombined" class="copied hidden">Copied ✓</span>
+              </span>
+            </div>
+            <textarea id="combinedReveal" class="reveal hidden" rows="3" readonly></textarea>
+          </div>
+
+          <p class="note">Keep these links private — anyone who has one can see those bookings. To turn a link off, change your Sykes password.</p>
+        </div>
+      </section>
+
+      <p class="foot">Your password is encrypted on your device — this tool only ever <strong>reads</strong> your bookings. <a href="https://github.com/midzdotdev/sykes-owner-calendar" target="_blank" rel="noopener">How it works</a>.</p>
+    </div>
+  </main>
 
 <script type="module">
 import { encryptCredentials } from "/crypto.js";
