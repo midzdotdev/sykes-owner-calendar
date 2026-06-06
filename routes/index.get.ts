@@ -179,7 +179,7 @@ const PAGE = /* html */ `<!doctype html>
           <input id="email" type="email" autocomplete="username" required />
           <label for="password">Your Sykes password</label>
           <input id="password" type="password" autocomplete="current-password" required />
-          <p class="hint">Your email and password are encrypted on this device before anything is sent.</p>
+          <p class="hint">Your email and password are encrypted on your device and stay encrypted in transit — only this tool can unscramble them.</p>
           <div class="row" style="margin-top:16px"><button id="find" class="primary" type="submit">Find my properties</button></div>
           <p id="creds-error" class="error hidden"></p>
         </form>
@@ -226,7 +226,7 @@ const PAGE = /* html */ `<!doctype html>
         </div>
       </div>
 
-      <p class="foot">Your password is encrypted on your device — this tool only ever <strong>reads</strong> your bookings. <a href="https://github.com/midzdotdev/sykes-owner-calendar" target="_blank" rel="noopener">How it works</a>.</p>
+      <p class="foot">This tool only ever <strong>reads</strong> your bookings — it never changes anything in your Sykes account. <a href="https://github.com/midzdotdev/sykes-owner-calendar" target="_blank" rel="noopener">How it works</a>.</p>
     </div>
   </main>
 
