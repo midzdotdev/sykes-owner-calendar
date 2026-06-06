@@ -18,7 +18,8 @@ const HKDF_INFO = new TextEncoder().encode("sykes-owner-calendar/v1");
 export type Credentials = {
   email: string;
   password: string;
-  propertyIds: string[];
+  /** A fixed set of property ids, or "all" to resolve the owner's current properties live. */
+  propertyIds: string[] | "all";
 };
 
 const fromB64url = (s: string): Buffer =>
@@ -72,7 +73,11 @@ export const createTokenCodec = (privateKeyPem: string) => {
     const plain = Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf8");
 
     const [email = "", password = "", ids = ""] = plain.split("\n");
-    return { email, password, propertyIds: ids ? ids.split(",").filter(Boolean) : [] };
+    return {
+      email,
+      password,
+      propertyIds: ids === "*" ? "all" : ids ? ids.split(",").filter(Boolean) : [],
+    };
   };
 
   return { decode, publicKeyRaw };

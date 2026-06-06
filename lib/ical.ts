@@ -17,14 +17,25 @@ const prodId: ICalCalendarProdIdData = {
   language: "EN",
 };
 
-export const makeBookingsCalendar = (bookings: Booking[], name?: string) =>
+export const makeBookingsCalendar = (
+  bookings: Booking[],
+  name?: string,
+  opts?: { prefixProperty?: boolean }
+) =>
   ical({
     prodId,
     name: name ?? bookings[0]?.Property ?? "Unknown Property",
-    events: bookings.map((x) => getBookingICalEventData(x)),
+    events: bookings.map((x) =>
+      getBookingICalEventData(x, opts?.prefixProperty ?? false)
+    ),
   });
 
-const getBookingICalEventData = (booking: Booking): ICalEventData => {
+const getBookingICalEventData = (
+  booking: Booking,
+  // In a combined calendar, prefix each event with its property so the cottages
+  // are distinguishable (a single-property calendar is already named after it).
+  prefixProperty: boolean
+): ICalEventData => {
   const attendees: ICalAttendeeData[] =
     !isOwnerBooking(booking) && !!booking.Email
       ? [
@@ -35,6 +46,14 @@ const getBookingICalEventData = (booking: Booking): ICalEventData => {
           },
         ]
       : [];
+
+  const summary = isOwnerBooking(booking)
+    ? "Owner Booking"
+    : `${booking.Name} (${joinRecordEntries({
+        adult: booking["Adults"] ?? 0,
+        kid: booking["Teenagers and Children"] ?? 0,
+        infant: booking["Infants"] ?? 0,
+      })})`;
 
   return {
     id: isOwnerBooking(booking)
@@ -54,13 +73,7 @@ const getBookingICalEventData = (booking: Booking): ICalEventData => {
         ? ICalEventStatus.CANCELLED
         : ICalEventStatus.CONFIRMED,
 
-    summary: isOwnerBooking(booking)
-      ? "Owner Booking"
-      : `${booking.Name} (${joinRecordEntries({
-          adult: booking["Adults"] ?? 0,
-          kid: booking["Teenagers and Children"] ?? 0,
-          infant: booking["Infants"] ?? 0,
-        })})`,
+    summary: prefixProperty ? `${booking.Property} · ${summary}` : summary,
 
     attendees,
 

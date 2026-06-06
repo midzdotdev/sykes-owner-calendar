@@ -24,6 +24,14 @@ describe("token codec (WebCrypto encrypt ↔ node decrypt)", () => {
     expect(codec.decode(token)).toEqual(creds);
   });
 
+  it('round-trips the "all properties" sentinel', async () => {
+    const codec = createTokenCodec(newKeypairPem());
+    const creds = { email: "jane@example.com", password: "pw", propertyIds: "all" as const };
+
+    const token = await encryptCredentials(codec.publicKeyRaw(), creds);
+    expect(codec.decode(token)).toEqual(creds);
+  });
+
   it("produces a compact, URL-safe token", async () => {
     const codec = createTokenCodec(newKeypairPem());
     const token = await encryptCredentials(codec.publicKeyRaw(), {
