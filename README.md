@@ -39,6 +39,6 @@ The good news is that your password is **encrypted inside the link** — it's ne
 
 ---
 
-*An independent project — not affiliated with, or endorsed by, [Sykes Cottages Ltd](https://www.sykescottages.co.uk/).*
+*An independent project — not affiliated with, or endorsed by, [SYKES COTTAGES LTD](https://www.sykescottages.co.uk/).*
 
 **Building or contributing?** See **[DEVELOPERS.md](DEVELOPERS.md)** — how it works, the routes, scripts, secrets, CI and deployment.
