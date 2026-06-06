@@ -104,14 +104,15 @@ const PAGE = /* html */ `<!doctype html>
 
   .includeall { display:flex; gap:11px; align-items:flex-start; background:linear-gradient(180deg,#f1f6ff,#eaf1ff);
     border:1.5px solid #cfe0fb; border-radius:13px; padding:13px 15px; font-weight:700; margin:.3rem 0 .2rem; cursor:pointer; }
-  .includeall input { margin-top:3px; flex:0 0 auto; width:17px; height:17px; accent-color:var(--blue); }
+  .includeall input { margin-top:3px; flex:0 0 auto; width:17px; height:17px; accent-color:var(--blue); cursor:pointer; }
   .orpick { color:var(--muted); font-size:.8rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; margin:.9rem 0 .1rem; }
   .orpick.disabled { opacity:.45; }
   .props { list-style:none; padding:0; margin:.2rem 0 .4rem; }
   .props li { padding:8px 2px; }
-  .props label { display:flex; gap:10px; align-items:center; font-weight:500; margin:0; font-size:1rem; }
-  .props label.disabled { opacity:.45; }
-  .props input { width:17px; height:17px; accent-color:var(--blue); }
+  .props label { display:flex; gap:10px; align-items:center; font-weight:500; margin:0; font-size:1rem; cursor:pointer; }
+  .props label.disabled { opacity:.45; cursor:default; }
+  .props input { width:17px; height:17px; accent-color:var(--blue); cursor:pointer; }
+  .props input:disabled { cursor:default; }
 
   .note { background:#fff5fa; border:1px solid #f6cfe4; border-radius:12px; padding:13px 15px; color:#9b1f64; font-size:.88rem; margin-top:18px; }
   .error { color:var(--err); font-weight:600; margin:.9rem 0 0; }
