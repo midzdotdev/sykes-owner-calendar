@@ -31,10 +31,11 @@ const PAGE = /* html */ `<!doctype html>
     background-color:#0c1828;
     background-image:
       radial-gradient(rgba(255,255,255,.075) 1.2px, transparent 1.3px),
-      radial-gradient(1100px 560px at 84% -14%, #2a456b 0%, #182a40 42%, rgba(12,24,40,0) 78%);
-    background-size:26px 26px, 100% 820px;
-    background-repeat:repeat, no-repeat;
-    background-attachment:fixed, fixed; }
+      radial-gradient(740px 470px at 6% -12%, rgba(207,31,134,.24) 0%, rgba(207,31,134,0) 66%),
+      radial-gradient(1100px 560px at 86% -14%, #2a456b 0%, #182a40 42%, rgba(12,24,40,0) 78%);
+    background-size:26px 26px, 100% 740px, 100% 820px;
+    background-repeat:repeat, no-repeat, no-repeat;
+    background-attachment:fixed, fixed, fixed; }
   .wrap { max-width:660px; margin:0 auto; padding:0 22px; }
   h1, h2, .lname, .logo-text, .acct strong { font-family:"Sora", "Hanken Grotesk", system-ui, sans-serif; }
   a { color:var(--blue); }
@@ -57,6 +58,7 @@ const PAGE = /* html */ `<!doctype html>
   .eyebrow { display:inline-block; font-size:.74rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
     color:#ff8fce; margin:0 0 14px; }
   .hero h1 { font-size:clamp(2rem, 5.4vw, 2.85rem); line-height:1.08; font-weight:800; margin:0 0 14px; letter-spacing:-.01em; }
+  .hero h1 .hl { background:linear-gradient(transparent 64%, rgba(207,31,134,.6) 64%, rgba(207,31,134,.6) 94%, transparent 94%); padding:0 .04em; }
   .hero .lede { font-size:1.06rem; color:#c4d2e2; margin:0; max-width:30em; }
 
   /* ---- Content (one card lifts over the masthead) ---- */
@@ -102,7 +104,7 @@ const PAGE = /* html */ `<!doctype html>
   /* ---- Tabs (segmented control) ---- */
   .tabbar { display:flex; background:#eef2f7; border:1px solid var(--line); border-radius:13px; padding:4px; gap:4px; margin:.2rem 0 18px; }
   .tab { flex:1; background:none; color:var(--muted); border-radius:9px; padding:10px 10px; font-weight:700; font-size:.92rem; }
-  .tab.active { background:#fff; color:var(--ink); box-shadow:0 2px 6px -1px rgba(20,40,70,.16); }
+  .tab.active { background:#fff; color:var(--ink); box-shadow:0 2px 6px -1px rgba(20,40,70,.16), inset 0 -2.5px 0 var(--magenta); }
   .tab:hover:not(.active) { color:var(--ink); }
   .tabpanel { animation:fade .35s ease; }
 
@@ -157,7 +159,7 @@ const PAGE = /* html */ `<!doctype html>
       </header>
       <div class="hero">
         <p class="eyebrow reveal-anim d1">For property owners</p>
-        <h1 class="reveal-anim d2">Your bookings, in your own calendar.</h1>
+        <h1 class="reveal-anim d2">Your bookings, in your own <span class="hl">calendar</span>.</h1>
         <p class="lede reveal-anim d3">Add your Sykes Cottages bookings to the calendar on your phone or computer — set it up once and it stays up to date on its own.</p>
       </div>
     </div>
