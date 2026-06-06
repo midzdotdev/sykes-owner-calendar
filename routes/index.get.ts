@@ -102,9 +102,10 @@ const PAGE = /* html */ `<!doctype html>
   .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 
   /* ---- Tabs (segmented control) ---- */
-  .tabbar { display:flex; background:#eef2f7; border:1px solid var(--line); border-radius:13px; padding:4px; gap:4px; margin:.2rem 0 18px; }
-  .tab { flex:1; background:none; color:var(--muted); border-radius:9px; padding:10px 10px; font-weight:700; font-size:.92rem; }
-  .tab.active { background:#fff; color:var(--ink); box-shadow:0 2px 6px -1px rgba(20,40,70,.16), inset 0 -2.5px 0 var(--magenta); }
+  .tabbar { display:flex; gap:6px; border-bottom:1px solid var(--line); margin:.2rem 0 18px; }
+  .tab { flex:1; background:none; color:var(--muted); border-radius:0; padding:11px 8px; font-weight:700; font-size:.92rem;
+    border-bottom:2.5px solid transparent; margin-bottom:-1px; }
+  .tab.active { color:var(--ink); border-bottom-color:var(--magenta); }
   .tab:hover:not(.active) { color:var(--ink); }
   .tabpanel { animation:fade .35s ease; }
 
