@@ -1,6 +1,7 @@
 // The owner-facing web UI. A single, framework-free page that encrypts the
 // owner's credentials in the browser (public/crypto.js + the server public key),
-// lists their properties, and gives a copyable calendar link for each.
+// lists their properties, and offers either a calendar per property or one
+// combined calendar (optionally "all properties, now and in future").
 const PAGE = /* html */ `<!doctype html>
 <html lang="en">
 <head>
@@ -23,18 +24,31 @@ const PAGE = /* html */ `<!doctype html>
   .hint { color:var(--muted); font-size:.86rem; margin:.5rem 0 0; }
   button { font:inherit; font-weight:600; border:0; border-radius:9px; padding:11px 16px; cursor:pointer; }
   button.small { padding:7px 12px; font-size:.9rem; }
+  button:disabled { opacity:.55; cursor:default; }
   .primary { background:var(--brand); color:#fff; }
-  .primary:disabled { opacity:.55; cursor:default; }
   .ghost { background:#eef2f8; color:var(--ink); }
   .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .tabbar { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:16px; }
+  .tab { background:none; color:var(--muted); border-radius:0; padding:9px 12px; margin-bottom:-1px; border-bottom:2px solid transparent; }
+  .tab.active { color:var(--ink); border-bottom-color:var(--brand); }
+  .tabpanel { animation:none; }
   .links { list-style:none; padding:0; margin:.4rem 0 0; }
   .links li { padding:11px 4px; border-bottom:1px solid var(--line); }
-  .links .top { display:flex; gap:10px; align-items:center; justify-content:space-between; }
-  .links .lname { font-weight:600; }
+  .top { display:flex; gap:10px; align-items:center; justify-content:space-between; }
+  .lname { font-weight:600; }
+  .props { list-style:none; padding:0; margin:.2rem 0 .6rem; }
+  .props li { padding:7px 2px; }
+  .props label { display:flex; gap:9px; align-items:center; font-weight:500; margin:0; }
+  .props label.disabled { opacity:.5; }
+  .includeall { display:flex; gap:10px; align-items:flex-start; background:#eef4ff; border:1px solid #d4e2fb;
+    border-radius:10px; padding:11px 13px; font-weight:600; margin:.2rem 0 .4rem; cursor:pointer; }
+  .includeall input { margin-top:3px; flex:0 0 auto; }
+  .orpick { color:var(--muted); font-size:.82rem; font-weight:600; margin:.6rem 0 0; }
+  .orpick.disabled { opacity:.5; }
   .copied { color:var(--ok); font-weight:600; font-size:.9rem; }
   .hidden { display:none; }
   .error { color:var(--err); font-weight:500; margin:.8rem 0 0; }
-  .note { background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:12px 14px; color:#7c4a03; font-size:.9rem; }
+  .note { background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:12px 14px; color:#7c4a03; font-size:.9rem; margin-top:16px; }
   a { color:var(--brand); }
   .step { font-size:.8rem; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); margin:0 0 .4rem; }
 </style>
@@ -57,9 +71,36 @@ const PAGE = /* html */ `<!doctype html>
 
   <section id="result" class="card hidden">
     <p class="step">Step 2 — your calendars</p>
-    <p class="hint">You get a separate calendar for each property. Press <strong>Copy</strong> next to one and add it to your calendar app (Apple Calendar, Google Calendar, Outlook). <a href="https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device" target="_blank" rel="noopener">How to add a calendar by link</a>.</p>
-    <ul id="links" class="links"></ul>
-    <p class="note">Keep these links private — anyone who has one can see that property's bookings. To turn a link off, change your Sykes password.</p>
+    <p id="noprops" class="hint hidden">We couldn't find any properties on your account. If you have some, please try again shortly.</p>
+
+    <div id="tabs" class="hidden">
+      <div class="tabbar">
+        <button type="button" class="tab active" data-tab="individual">A calendar per property</button>
+        <button type="button" class="tab" data-tab="combined">One combined calendar</button>
+      </div>
+
+      <div class="tabpanel" data-panel="individual">
+        <p class="hint">A separate calendar for each property. Press <strong>Copy</strong> and add it to your calendar app (Apple Calendar, Google Calendar, Outlook). <a href="https://help.hospitable.com/en/articles/4605516-how-can-i-add-the-ical-feed-to-the-calendar-on-my-device" target="_blank" rel="noopener">How to add a calendar by link</a>.</p>
+        <ul id="links" class="links"></ul>
+      </div>
+
+      <div class="tabpanel hidden" data-panel="combined">
+        <p class="hint">One calendar with every property's bookings together — each event is labelled with its property.</p>
+        <label class="includeall"><input type="checkbox" id="includeAll" checked /> Include all my properties (now and any I add later)</label>
+        <p class="orpick" id="orpick">Or choose specific properties</p>
+        <ul id="combinedProps" class="props"></ul>
+        <div class="top">
+          <span class="lname">Combined calendar</span>
+          <span class="row">
+            <button type="button" class="ghost small" id="copyCombined">Copy</button>
+            <span id="copiedCombined" class="copied hidden">Copied ✓</span>
+          </span>
+        </div>
+        <textarea id="combinedReveal" class="reveal hidden" rows="3" readonly></textarea>
+      </div>
+
+      <p class="note">Keep these links private — anyone who has one can see those bookings. To turn a link off, change your Sykes password.</p>
+    </div>
   </section>
 </main>
 
@@ -68,12 +109,17 @@ import { encryptCredentials } from "/crypto.js";
 
 const $ = (id) => document.getElementById(id);
 let publicKey = null;
+let pub = null;          // cached server public key
+let c = null;            // cached credentials { email, password }
+let combinedLink = null; // current combined link, or null when nothing is selected
 
 async function getPublicKey() {
   if (!publicKey) publicKey = (await (await fetch("/api/pubkey")).json()).publicKey;
   return publicKey;
 }
 const creds = () => ({ email: $("email").value.trim(), password: $("password").value });
+const linkFor = async (propertyIds) =>
+  \`\${location.origin}/c/\${await encryptCredentials(pub, { ...c, propertyIds })}\`;
 
 $("creds").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -82,8 +128,8 @@ $("creds").addEventListener("submit", async (e) => {
   const btn = $("find");
   btn.disabled = true; btn.textContent = "Checking…";
   try {
-    const pub = await getPublicKey();
-    const c = creds();
+    pub = await getPublicKey();
+    c = creds();
     const res = await fetch("/api/properties", {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ token: await encryptCredentials(pub, c) }),
@@ -94,13 +140,14 @@ $("creds").addEventListener("submit", async (e) => {
     }
     const properties = (await res.json()).properties;
 
-    // Pre-compute a calendar link per property now — not in the Copy handler — so
-    // the click can write to the clipboard synchronously, inside the user gesture.
-    const rows = await Promise.all(properties.map(async (p) => ({
-      name: p.name,
-      link: \`\${location.origin}/c/\${await encryptCredentials(pub, { ...c, propertyIds: [p.id] })}\`,
-    })));
-    renderLinks(rows);
+    if (!properties.length) {
+      $("noprops").classList.remove("hidden");
+      $("tabs").classList.add("hidden");
+    } else {
+      $("noprops").classList.add("hidden");
+      await setupResults(properties);
+      $("tabs").classList.remove("hidden");
+    }
     $("result").classList.remove("hidden");
     $("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (e2) {
@@ -110,7 +157,54 @@ $("creds").addEventListener("submit", async (e) => {
   }
 });
 
-function renderLinks(rows) {
+async function setupResults(properties) {
+  // Individual tab: one pre-computed link per property (so Copy is synchronous).
+  const rows = await Promise.all(
+    properties.map(async (p) => ({ name: p.name, link: await linkFor([p.id]) }))
+  );
+  renderIndividual(rows);
+
+  // Combined tab: a checkbox per property; "include all" disables + checks them.
+  $("combinedProps").innerHTML = properties.map((p) =>
+    \`<li><label><input type="checkbox" class="cprop" value="\${p.id}" checked /> \${p.name}</label></li>\`
+  ).join("");
+  $("combinedProps").querySelectorAll(".cprop").forEach((cb) =>
+    cb.addEventListener("change", recomputeCombined)
+  );
+  $("includeAll").checked = true;
+  syncIncludeAll();
+  await recomputeCombined();
+}
+
+$("includeAll").addEventListener("change", () => { syncIncludeAll(); recomputeCombined(); });
+
+function syncIncludeAll() {
+  const all = $("includeAll").checked;
+  $("orpick").classList.toggle("disabled", all);
+  $("combinedProps").querySelectorAll(".cprop").forEach((cb) => {
+    if (all) cb.checked = true;
+    cb.disabled = all;
+    cb.closest("label").classList.toggle("disabled", all);
+  });
+}
+
+async function recomputeCombined() {
+  const all = $("includeAll").checked;
+  const ids = all
+    ? "all"
+    : [...$("combinedProps").querySelectorAll(".cprop:checked")].map((cb) => cb.value);
+  const copyBtn = $("copyCombined");
+  if (!all && ids.length === 0) {
+    combinedLink = null;
+    copyBtn.disabled = true;
+    return;
+  }
+  combinedLink = await linkFor(ids);
+  $("combinedReveal").value = combinedLink;
+  copyBtn.disabled = false;
+}
+
+function renderIndividual(rows) {
   $("links").innerHTML = rows.map((r, i) => \`
     <li>
       <div class="top">
@@ -134,13 +228,39 @@ function renderLinks(rows) {
         clearTimeout(timer);
         timer = setTimeout(() => copied.classList.add("hidden"), 2000);
       } catch {
-        // Clipboard blocked — reveal the link so it can be copied by hand.
         const ta = li.querySelector(".reveal");
         ta.classList.remove("hidden"); ta.select();
       }
     });
   });
 }
+
+// Combined Copy — uses the link pre-computed on each selection change.
+let combinedTimer;
+$("copyCombined").addEventListener("click", async () => {
+  if (!combinedLink) return;
+  try {
+    await navigator.clipboard.writeText(combinedLink);
+    const copied = $("copiedCombined");
+    copied.classList.remove("hidden");
+    clearTimeout(combinedTimer);
+    combinedTimer = setTimeout(() => copied.classList.add("hidden"), 2000);
+  } catch {
+    const ta = $("combinedReveal");
+    ta.classList.remove("hidden"); ta.select();
+  }
+});
+
+// Tabs
+document.querySelectorAll(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const name = tab.dataset.tab;
+    document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t === tab));
+    document.querySelectorAll(".tabpanel").forEach((p) =>
+      p.classList.toggle("hidden", p.dataset.panel !== name)
+    );
+  });
+});
 </script>
 </body>
 </html>`;

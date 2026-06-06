@@ -24,7 +24,9 @@ const fromB64url = (s) => {
 /**
  * Encrypt credentials into a URL-safe token.
  * @param {string} publicKeyB64url - server's raw P-256 public key (65 bytes), base64url
- * @param {{email: string, password: string, propertyIds?: string[]}} payload
+ * @param {{email: string, password: string, propertyIds?: string[] | "all"}} payload
+ *   propertyIds "all" → the feed resolves the owner's current properties on every
+ *   refresh (so newly-added properties appear automatically).
  * @returns {Promise<string>} base64url token
  */
 export async function encryptCredentials(publicKeyB64url, payload) {
@@ -55,8 +57,11 @@ export async function encryptCredentials(publicKeyB64url, payload) {
   const aesKey = await subtle.importKey("raw", okm.slice(0, 32), { name: "AES-GCM" }, false, ["encrypt"]);
   const nonce = okm.slice(32, 44);
 
+  // "*" is the wire form of the "all properties" sentinel (resolved live server-side).
+  const ids =
+    payload.propertyIds === "all" ? "*" : (payload.propertyIds ?? []).join(",");
   const plaintext = new TextEncoder().encode(
-    [payload.email, payload.password, (payload.propertyIds ?? []).join(",")].join("\n")
+    [payload.email, payload.password, ids].join("\n")
   );
   const ctTag = new Uint8Array(await subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, plaintext));
 

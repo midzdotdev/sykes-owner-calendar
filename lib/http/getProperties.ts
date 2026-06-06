@@ -20,7 +20,16 @@ export const getProperties = async (params: {
 
   const $ = cheerio.load(await resp.text());
 
-  const properties = $("#property-selector option")
+  // A missing selector means the page structure changed — that's an extraction
+  // failure. A present-but-empty selector means the owner genuinely has no
+  // properties, which we return as an empty list (handled gracefully by the UI).
+  const selector = $("#property-selector");
+  if (selector.length === 0) {
+    throw new ExtractionError("Property list not found — the Sykes page may have changed");
+  }
+
+  return selector
+    .find("option")
     .toArray()
     .map((el) => {
       const id = ($(el).attr("value") ?? "").trim();
@@ -29,11 +38,5 @@ export const getProperties = async (params: {
       const name = text.replace(new RegExp(`^${id}\\s+`), "").trim() || text;
       return { id, name };
     })
-    .filter((p) => /^\d+$/.test(p.id)); // skip the "All Properties" option
-
-  if (properties.length === 0) {
-    throw new ExtractionError("No properties found — the Sykes page may have changed");
-  }
-
-  return properties;
+    .filter((p) => /^\d+$/.test(p.id)); // numeric ids = real properties (skips "All Properties")
 };

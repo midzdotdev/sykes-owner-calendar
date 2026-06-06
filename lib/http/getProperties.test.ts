@@ -23,4 +23,13 @@ describe("getProperties", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response("<html><body>changed</body></html>", { status: 200 })));
     await expect(getProperties({ session: { cookies: {} } })).rejects.toThrow(ExtractionError);
   });
+
+  it("returns an empty list when the selector exists but has no properties", async () => {
+    // Selector present, only the non-numeric "All Properties" placeholder → genuinely empty.
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(
+      '<html><body><select id="property-selector"><option value="">All Properties</option></select></body></html>',
+      { status: 200 }
+    )));
+    await expect(getProperties({ session: { cookies: {} } })).resolves.toEqual([]);
+  });
 });

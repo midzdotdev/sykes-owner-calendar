@@ -4,6 +4,7 @@ import { buildCombinedCalendar } from "./calendar";
 
 const loginHtml = readFileSync(new URL("./http/__fixtures__/login-page.html", import.meta.url), "utf8");
 const bookingsHtml = readFileSync(new URL("./http/__fixtures__/owner-bookings.html", import.meta.url), "utf8");
+const propertiesHtml = readFileSync(new URL("./http/__fixtures__/properties.html", import.meta.url), "utf8");
 
 const respWithUrl = (body: string, url: string) => {
   const res = new Response(body, { status: 200 });
@@ -21,6 +22,7 @@ const stubSykes = () =>
         ? respWithUrl("ok", "https://www.sykescottages.co.uk/owner/dashboard")
         : new Response(loginHtml, { status: 200 });
     }
+    if (url.endsWith("/owner/bookings")) return new Response(propertiesHtml, { status: 200 });
     if (url.includes("/owner/bookings/")) return new Response(bookingsHtml, { status: 200 });
     throw new Error(`unexpected fetch: ${url}`);
   });
@@ -49,5 +51,19 @@ describe("buildCombinedCalendar", () => {
     const ics = cal.toString();
     expect((ics.match(/BEGIN:VEVENT/g) || []).length).toBe(8); // 4 per property
     expect(ics).toContain("X-WR-CALNAME:Sykes Bookings");
+    expect(ics).toContain("Test Cottage · "); // events prefixed with their property
+  });
+
+  it('resolves "all" to the owner\'s live property list and prefixes events', async () => {
+    const cal = await buildCombinedCalendar({
+      email: "a@b.com",
+      password: "pw",
+      propertyIds: "all",
+    });
+    const ics = cal.toString();
+    // properties.html lists 2 properties → 2 × 4 fixture bookings
+    expect((ics.match(/BEGIN:VEVENT/g) || []).length).toBe(8);
+    expect(ics).toContain("X-WR-CALNAME:Sykes Bookings");
+    expect(ics).toContain("Test Cottage · ");
   });
 });
