@@ -1,3 +1,5 @@
+[![E2E live](https://github.com/midzdotdev/sykes-owner-calendar/actions/workflows/e2e-live.yml/badge.svg)](https://github.com/midzdotdev/sykes-owner-calendar/actions/workflows/e2e-live.yml)
+
 # Sykes Owner Calendar
 
 See all the bookings for your [Sykes Cottages](https://www.sykescottages.co.uk) holiday property in your everyday calendar — the one on your phone, tablet or computer. Once it's set up, your bookings appear on their own and stay up to date, so you can tell at a glance when your property is booked, when guests come and go, and which dates you've kept for yourself.
